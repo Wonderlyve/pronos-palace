@@ -1,158 +1,212 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Users, Trophy, Target, Star, Play } from "lucide-react";
+
+import { useState, useEffect } from 'react';
+import { Menu, Search, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import PredictionCard from '@/components/PredictionCard';
+import BottomNavigation from '@/components/BottomNavigation';
+import SideMenu from '@/components/SideMenu';
+import NotificationIcon from '@/components/NotificationIcon';
+import { useOptimizedPosts } from '@/hooks/useOptimizedPosts';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import PostSkeleton from '@/optimization/PostSkeleton';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
+  const [sideMenuOpen, setSideMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [hiddenPostIds, setHiddenPostIds] = useState<string[]>([]);
+  const [blockedUserIds, setBlockedUserIds] = useState<string[]>([]);
+  const { posts, loading, initialLoading } = useOptimizedPosts();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Charger les posts masqués et utilisateurs bloqués
+  useEffect(() => {
+    const loadUserFilters = async () => {
+      if (!user) {
+        setHiddenPostIds([]);
+        setBlockedUserIds([]);
+        return;
+      }
+
+      try {
+        // Charger les posts masqués
+        const { data: hiddenPosts } = await supabase
+          .from('hidden_posts')
+          .select('post_id')
+          .eq('user_id', user.id);
+
+        // Charger les utilisateurs bloqués
+        const { data: blockedUsers } = await supabase
+          .from('blocked_users')
+          .select('blocked_id')
+          .eq('blocker_id', user.id);
+
+        setHiddenPostIds(hiddenPosts?.map(hp => hp.post_id) || []);
+        setBlockedUserIds(blockedUsers?.map(bu => bu.blocked_id) || []);
+      } catch (error) {
+        console.error('Error loading user filters:', error);
+      }
+    };
+
+    loadUserFilters();
+  }, [user]);
+
+  const handleOpenModal = (data: any) => {
+    // Modal handling logic if needed
+    console.log('Opening modal with data:', data);
+  };
+
+  const filteredPosts = posts.filter(post => {
+    // Filtrer par recherche
+    const matchesSearch = post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.match_teams?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.sport?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    // Filtrer les posts masqués
+    if (hiddenPostIds.includes(post.id)) return false;
+
+    // Filtrer les posts d'utilisateurs bloqués
+    if (blockedUserIds.includes(post.user_id)) return false;
+
+    return true;
+  });
+
+  const handleProfileClick = () => {
+    if (user) {
+      navigate('/profile');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  // Transform Post to PredictionCard format
+  const transformPostToPrediction = (post: any) => ({
+    id: post.id,
+    user: {
+      username: post.display_name || post.username || 'Utilisateur',
+      avatar: post.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + post.user_id,
+      badge: 'Nouveau',
+      badgeColor: 'bg-gray-500'
+    },
+    match: post.match_teams || 'Match non spécifié',
+    prediction: post.prediction_text || 'Pronostic non spécifié',
+    odds: post.odds?.toString() || '1.00',
+    confidence: post.confidence || 0,
+    analysis: post.analysis || post.content || '',
+    likes: post.likes || 0,
+    comments: post.comments || 0,
+    shares: post.shares || 0,
+    successRate: 75, // Default value, should come from user stats
+    timeAgo: new Date(post.created_at).toLocaleDateString('fr-FR'),
+    sport: post.sport || 'Sport',
+    image: post.image_url,
+    video: post.video_url,
+    is_liked: post.is_liked || false
+  });
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-background"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center">
-            <h1 className="text-6xl font-bold mb-6">
-              <span className="gradient-text">PronoPik</span>
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Le réseau social des experts en pronostiques sportifs. Partagez vos analyses, 
-              suivez les meilleurs tipsters et rejoignez une communauté passionnée.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="gradient" size="lg" className="text-lg px-8">
-                <Play className="w-5 h-5 mr-2" />
-                Commencer maintenant
+    <div className="min-h-screen bg-gray-50">
+      {/* Header avec logo, notifications et photo de profil */}
+      <div className="bg-gradient-to-r from-green-500 to-green-600 border-b sticky top-0 z-40">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSideMenuOpen(true)}
+                className="lg:hidden text-white hover:bg-white/20"
+              >
+                <Menu className="h-6 w-6" />
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8">
-                Découvrir les experts
+              <div className="flex items-center space-x-2">
+                <img 
+                  src="/lovable-uploads/35ad5651-d83e-4704-9851-61f3ad9fb0c3.png" 
+                  alt="PENDOR Logo" 
+                  className="w-8 h-8 rounded-full"
+                />
+                <h1 className="text-xl font-bold text-white">PENDOR</h1>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              {user && <NotificationIcon />}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleProfileClick}
+                className="text-white hover:bg-white/20"
+              >
+                {user ? (
+                  <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      {user.email?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                ) : (
+                  <User className="h-6 w-6" />
+                )}
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Pourquoi PronoPik ?</h2>
-          <p className="text-muted-foreground text-lg">Les outils dont vous avez besoin pour réussir</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="card-elegant text-center p-6">
-            <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Target className="w-6 h-6 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Pronostiques Précis</h3>
-            <p className="text-muted-foreground text-sm">
-              Analyses détaillées et prédictions basées sur des statistiques avancées
-            </p>
-          </Card>
-
-          <Card className="card-elegant text-center p-6">
-            <div className="bg-accent/10 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Users className="w-6 h-6 text-accent" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Communauté Active</h3>
-            <p className="text-muted-foreground text-sm">
-              Échangez avec des passionnés et apprenez des meilleurs tipsters
-            </p>
-          </Card>
-
-          <Card className="card-elegant text-center p-6">
-            <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <TrendingUp className="w-6 h-6 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Suivi Performance</h3>
-            <p className="text-muted-foreground text-sm">
-              Statistiques détaillées et historique de vos pronostiques
-            </p>
-          </Card>
-
-          <Card className="card-elegant text-center p-6">
-            <div className="bg-accent/10 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <Trophy className="w-6 h-6 text-accent" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Classements</h3>
-            <p className="text-muted-foreground text-sm">
-              Compétitions mensuelles et récompenses pour les meilleurs
-            </p>
-          </Card>
+      {/* Search Bar */}
+      <div className="bg-white border-b">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Rechercher des pronostics, sports, équipes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Top Tipsters Preview */}
-      <div className="bg-card/50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Nos Meilleurs Tipsters</h2>
-            <p className="text-muted-foreground">Suivez les experts qui cartonnent</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="card-elegant p-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={`/placeholder-avatar-${i}.jpg`} />
-                    <AvatarFallback>T{i}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">Expert{i}</h3>
-                      <Badge variant="secondary" className="text-xs">
-                        <Star className="w-3 h-3 mr-1" />
-                        Pro
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Spécialiste Football</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-primary">78%</div>
-                    <div className="text-xs text-muted-foreground">Réussite</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">+45</div>
-                    <div className="text-xs text-muted-foreground">Unités</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">1.2k</div>
-                    <div className="text-xs text-muted-foreground">Followers</div>
-                  </div>
-                </div>
-                
-                <Button className="w-full mt-4" variant="outline">
-                  Suivre
-                </Button>
-              </Card>
+      {/* Content */}
+      <div className="max-w-2xl mx-auto px-4 py-4 pb-20 space-y-4">
+        {initialLoading ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <PostSkeleton key={i} />
             ))}
           </div>
-        </div>
+        ) : filteredPosts.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">
+              {searchQuery ? 'Aucun pronostic trouvé pour votre recherche.' : 'Aucun pronostic disponible.'}
+            </p>
+          </div>
+        ) : (
+          filteredPosts.map((post) => (
+            <PredictionCard 
+              key={post.id} 
+              prediction={transformPostToPrediction(post)} 
+              onOpenModal={handleOpenModal}
+            />
+          ))
+        )}
+
+        {loading && (
+          <div className="space-y-4">
+            {[...Array(2)].map((_, i) => (
+              <PostSkeleton key={i} />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* CTA Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <Card className="card-elegant text-center p-12">
-          <h2 className="text-3xl font-bold mb-4">Prêt à devenir un expert ?</h2>
-          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Rejoignez des milliers de parieurs qui ont transformé leur passion en expertise. 
-            Partagez vos pronostiques et construisez votre réputation.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="gradient" size="lg">
-              Créer mon compte
-            </Button>
-            <Button variant="ghost" size="lg">
-              En savoir plus
-            </Button>
-          </div>
-        </Card>
-      </div>
+      <BottomNavigation />
+      <SideMenu open={sideMenuOpen} onOpenChange={setSideMenuOpen} />
     </div>
   );
 };
