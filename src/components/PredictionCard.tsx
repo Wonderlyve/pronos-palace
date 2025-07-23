@@ -1,4 +1,4 @@
-import { Heart, Share, Star, MoreVertical, Play, VolumeX, Volume2, Pause, Maximize, Minimize, Edit, Trash2, MessageCircle } from 'lucide-react';
+import { Heart, Star, MoreVertical, Play, VolumeX, Volume2, Pause, Maximize, Minimize, Edit, Trash2, MessageCircle, ArrowUpRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -664,14 +664,15 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
                 <span className="text-sm font-medium">{postLikesCount}</span>
               </button>
             }>
-        <CommentsBottomSheet postId={prediction.id} commentsCount={0}>
-                <button className={`flex items-center space-x-2 transition-colors ${
+              <button 
+                onClick={handleLike}
+                className={`flex items-center space-x-2 transition-colors ${
                   isPostLiked ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
-                }`}>
-                  <Heart className={`w-5 h-5 ${isPostLiked ? 'fill-current' : ''}`} />
-                  <span className="text-sm font-medium">{postLikesCount}</span>
-                </button>
-              </CommentsBottomSheet>
+                }`}
+              >
+                <Heart className={`w-5 h-5 ${isPostLiked ? 'fill-current' : ''}`} />
+                <span className="text-sm font-medium">{postLikesCount}</span>
+              </button>
             </ProtectedComponent>
             
             <ProtectedComponent fallback={
@@ -690,7 +691,7 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
 
             <ProtectedComponent fallback={
               <button className="flex items-center space-x-2 text-gray-400 cursor-not-allowed">
-                <Share className="w-5 h-5" />
+                <ArrowUpRight className="w-5 h-5" />
                 <span className="text-sm font-medium">{prediction.shares}</span>
               </button>
             }>
@@ -698,7 +699,7 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
                 onClick={handleShare}
                 className="flex items-center space-x-2 text-gray-600 hover:text-green-500 transition-colors"
               >
-                <Share className="w-5 h-5" />
+                <ArrowUpRight className="w-5 h-5" />
                 <span className="text-sm font-medium">{prediction.shares}</span>
               </button>
             </ProtectedComponent>
