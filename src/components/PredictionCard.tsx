@@ -656,63 +656,63 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-6">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
             <ProtectedComponent fallback={
-              <button className="flex items-center space-x-2 text-gray-400 cursor-not-allowed">
-                <Heart className="w-5 h-5" />
-                <span className="text-sm font-medium">{postLikesCount}</span>
+              <button className="flex items-center space-x-1 text-gray-400 cursor-not-allowed">
+                <Heart className="w-4 h-4" />
+                <span className="text-xs font-medium">{postLikesCount}</span>
               </button>
             }>
               <button 
                 onClick={handleLike}
-                className={`flex items-center space-x-2 transition-colors ${
+                className={`flex items-center space-x-1 transition-colors ${
                   isPostLiked ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
                 }`}
               >
-                <Heart className={`w-5 h-5 ${isPostLiked ? 'fill-current' : ''}`} />
-                <span className="text-sm font-medium">{postLikesCount}</span>
+                <Heart className={`w-4 h-4 ${isPostLiked ? 'fill-current' : ''}`} />
+                <span className="text-xs font-medium">{postLikesCount}</span>
               </button>
             </ProtectedComponent>
             
             <ProtectedComponent fallback={
-              <button className="flex items-center space-x-2 text-gray-400 cursor-not-allowed">
-                <MessageCircle className="w-5 h-5" />
-                <span className="text-sm font-medium">0</span>
+              <button className="flex items-center space-x-1 text-gray-400 cursor-not-allowed">
+                <MessageCircle className="w-4 h-4" />
+                <span className="text-xs font-medium">0</span>
               </button>
             }>
               <CommentsBottomSheet postId={prediction.id.toString()} commentsCount={0}>
-                <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-colors">
-                  <MessageCircle className="w-5 h-5" />
-                  <span className="text-sm font-medium">0</span>
+                <button className="flex items-center space-x-1 text-gray-600 hover:text-blue-500 transition-colors">
+                  <MessageCircle className="w-4 h-4" />
+                  <span className="text-xs font-medium">0</span>
                 </button>
               </CommentsBottomSheet>
             </ProtectedComponent>
 
             <ProtectedComponent fallback={
-              <button className="flex items-center space-x-2 text-gray-400 cursor-not-allowed">
-                <ArrowUpRight className="w-5 h-5" />
-                <span className="text-sm font-medium">{prediction.shares}</span>
+              <button className="flex items-center space-x-1 text-gray-400 cursor-not-allowed">
+                <ArrowUpRight className="w-4 h-4" />
+                <span className="text-xs font-medium">{prediction.shares}</span>
               </button>
             }>
               <button 
                 onClick={handleShare}
-                className="flex items-center space-x-2 text-gray-600 hover:text-green-500 transition-colors"
+                className="flex items-center space-x-1 text-gray-600 hover:text-green-500 transition-colors"
               >
-                <ArrowUpRight className="w-5 h-5" />
-                <span className="text-sm font-medium">{prediction.shares}</span>
+                <ArrowUpRight className="w-4 h-4" />
+                <span className="text-xs font-medium">{prediction.shares}</span>
               </button>
             </ProtectedComponent>
           </div>
           
           <ProtectedComponent fallback={
-            <Button className="bg-gray-400 text-white text-sm px-4 py-2 h-8 cursor-not-allowed" size="sm" disabled>
+            <Button className="bg-gray-400 text-white text-xs px-3 py-1 h-7 cursor-not-allowed shrink-0" size="sm" disabled>
               Se connecter
             </Button>
           }>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="bg-green-500 hover:bg-green-600 text-white text-sm px-6 py-2 h-8" size="sm">
+                <Button className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 h-7 shrink-0" size="sm">
                   Voir le pronostique
                 </Button>
               </DialogTrigger>
