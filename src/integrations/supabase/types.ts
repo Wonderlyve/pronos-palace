@@ -50,6 +50,115 @@ export type Database = {
           },
         ]
       }
+      channel_messages: {
+        Row: {
+          channel_id: string
+          content: string
+          created_at: string
+          id: string
+          media_filename: string | null
+          media_type: string | null
+          media_url: string | null
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          content: string
+          created_at?: string
+          id?: string
+          media_filename?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          media_filename?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channel_subscriptions: {
+        Row: {
+          channel_id: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          subscribed_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          subscribed_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          subscribed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_subscriptions_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channels: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: string
+          is_private: boolean
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          id?: string
+          is_private?: boolean
+          name: string
+          price?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          id?: string
+          is_private?: boolean
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       comment_likes: {
         Row: {
           comment_id: string
@@ -260,6 +369,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          badge: string | null
           created_at: string
           display_name: string | null
           id: string
@@ -270,6 +380,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          badge?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -280,6 +391,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          badge?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
