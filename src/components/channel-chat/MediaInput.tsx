@@ -39,6 +39,17 @@ const MediaInput = ({ newMessage, setNewMessage, onSendMessage, disabled }: Medi
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, fileType?: string) => {
     const files = Array.from(e.target.files || []);
     
+    if (files.length === 0) return;
+
+    // Validate file size (max 50MB per file)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    for (const file of files) {
+      if (file.size > maxSize) {
+        toast.error(`Le fichier "${file.name}" est trop volumineux (max 50MB)`);
+        return;
+      }
+    }
+    
     files.forEach(file => {
       const type = getFileType(file, fileType);
       const mediaFile: MediaFile = { file, type };
@@ -46,8 +57,13 @@ const MediaInput = ({ newMessage, setNewMessage, onSendMessage, disabled }: Medi
       if (type === 'image') {
         const reader = new FileReader();
         reader.onload = (e) => {
-          mediaFile.preview = e.target?.result as string;
-          setMediaFiles(prev => [...prev, mediaFile]);
+          if (e.target?.result) {
+            mediaFile.preview = e.target.result as string;
+            setMediaFiles(prev => [...prev, mediaFile]);
+          }
+        };
+        reader.onerror = () => {
+          toast.error('Erreur lors de la lecture du fichier image');
         };
         reader.readAsDataURL(file);
       } else {

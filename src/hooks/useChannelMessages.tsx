@@ -72,48 +72,105 @@ export const useChannelMessages = (channelId: string, creatorId: string) => {
     }
 
     try {
-      let mediaUrl = null;
-      let mediaType = null;
-      let mediaFilename = null;
-
-      // Upload media file if provided
+      // Handle multiple media files by sending multiple messages
       if (mediaFiles && mediaFiles.length > 0) {
-        const file = mediaFiles[0]; // For now, handle one file at a time
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${channelId}/${Date.now()}.${fileExt}`;
+        let allUploadsSuccessful = true;
         
-        const { error: uploadError } = await supabase.storage
-          .from('channel-media')
-          .upload(fileName, file);
+        for (const file of mediaFiles) {
+          try {
+            const fileExt = file.name.split('.').pop() || 'bin';
+            const fileName = `${channelId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+            
+            // Check if bucket exists, create if not
+            const { error: uploadError } = await supabase.storage
+              .from('channel-media')
+              .upload(fileName, file, {
+                cacheControl: '3600',
+                upsert: false
+              });
 
-        if (uploadError) throw uploadError;
+            if (uploadError) {
+              console.error('Upload error:', uploadError);
+              
+              // If bucket doesn't exist, try to create it
+              if (uploadError.message.includes('bucket')) {
+                toast.error('Bucket de stockage non configuré. Contactez l\'administrateur.');
+                allUploadsSuccessful = false;
+                continue;
+              }
+              throw uploadError;
+            }
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('channel-media')
-          .getPublicUrl(fileName);
+            const { data: { publicUrl } } = supabase.storage
+              .from('channel-media')
+              .getPublicUrl(fileName);
 
-        mediaUrl = publicUrl;
-        mediaType = file.type.startsWith('image/') ? 'image' : 
-                   file.type.startsWith('video/') ? 'video' : 
-                   file.type.startsWith('audio/') ? 'audio' : 'file';
-        mediaFilename = file.name;
+            const mediaType = file.type.startsWith('image/') ? 'image' : 
+                             file.type.startsWith('video/') ? 'video' : 
+                             file.type.startsWith('audio/') ? 'audio' : 'file';
+
+            // Insert message with media
+            const { error: insertError } = await supabase
+              .from('channel_messages')
+              .insert({
+                channel_id: channelId,
+                user_id: user.id,
+                content: '', // Media-only message
+                media_url: publicUrl,
+                media_type: mediaType,
+                media_filename: file.name
+              });
+
+            if (insertError) throw insertError;
+            
+          } catch (fileError) {
+            console.error('Error uploading file:', file.name, fileError);
+            toast.error(`Erreur lors de l'envoi de ${file.name}`);
+            allUploadsSuccessful = false;
+          }
+        }
+
+        // Send text message if there's content
+        if (content.trim()) {
+          const { error: textError } = await supabase
+            .from('channel_messages')
+            .insert({
+              channel_id: channelId,
+              user_id: user.id,
+              content: content.trim(),
+              media_url: null,
+              media_type: null,
+              media_filename: null
+            });
+
+          if (textError) {
+            console.error('Error sending text message:', textError);
+            toast.error('Erreur lors de l\'envoi du message texte');
+            allUploadsSuccessful = false;
+          }
+        }
+
+        await fetchMessages(); // Refresh messages
+        return allUploadsSuccessful;
+        
+      } else {
+        // Text-only message
+        const { error } = await supabase
+          .from('channel_messages')
+          .insert({
+            channel_id: channelId,
+            user_id: user.id,
+            content: content.trim(),
+            media_url: null,
+            media_type: null,
+            media_filename: null
+          });
+
+        if (error) throw error;
+
+        await fetchMessages(); // Refresh messages
+        return true;
       }
-
-      const { error } = await supabase
-        .from('channel_messages')
-        .insert({
-          channel_id: channelId,
-          user_id: user.id,
-          content: content.trim() || '',
-          media_url: mediaUrl,
-          media_type: mediaType,
-          media_filename: mediaFilename
-        });
-
-      if (error) throw error;
-
-      await fetchMessages(); // Refresh messages
-      return true;
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Erreur lors de l\'envoi du message');

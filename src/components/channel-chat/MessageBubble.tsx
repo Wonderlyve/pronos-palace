@@ -18,8 +18,8 @@ const MessageBubble = ({ message, isCreator, creatorId }: MessageBubbleProps) =>
   };
 
   return (
-    <div className={`flex items-start ${isFromCreator ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[75%] ${isFromCreator ? 'text-right' : 'text-left'}`}>
+    <div className="flex items-start justify-start">
+      <div className="max-w-[75%] text-left">
         <div className="flex items-center space-x-2 mb-1">
           <span className="font-medium text-sm text-gray-700">
             {message.username}
@@ -32,7 +32,7 @@ const MessageBubble = ({ message, isCreator, creatorId }: MessageBubbleProps) =>
           </span>
         </div>
         
-        <div className="rounded-2xl px-4 py-2 bg-gray-200 text-gray-900">
+        <div className="rounded-2xl px-4 py-2 bg-white border border-gray-200 text-gray-900 shadow-sm">
           {message.content && (
             <div className="break-words text-sm leading-relaxed">
               {message.content}
@@ -41,7 +41,7 @@ const MessageBubble = ({ message, isCreator, creatorId }: MessageBubbleProps) =>
           
           {/* Media content */}
           {message.media_url && (
-            <div className="mt-2">
+            <div className={message.content ? "mt-2" : ""}>
               {message.media_type === 'image' && (
                 <img 
                   src={message.media_url} 
@@ -54,6 +54,7 @@ const MessageBubble = ({ message, isCreator, creatorId }: MessageBubbleProps) =>
                   src={message.media_url} 
                   controls 
                   className="max-w-full h-auto rounded-lg"
+                  preload="metadata"
                 />
               )}
               {message.media_type === 'audio' && (
@@ -61,7 +62,25 @@ const MessageBubble = ({ message, isCreator, creatorId }: MessageBubbleProps) =>
                   src={message.media_url} 
                   controls 
                   className="w-full"
+                  preload="metadata"
                 />
+              )}
+              {message.media_type === 'file' && (
+                <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      {message.media_filename || 'Fichier'}
+                    </p>
+                    <a 
+                      href={message.media_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      Télécharger
+                    </a>
+                  </div>
+                </div>
               )}
             </div>
           )}
