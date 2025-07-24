@@ -151,7 +151,7 @@ const Settings = () => {
         ))}
 
         {/* Admin Dashboard Access - Only for "Smart" user */}
-        {user?.email === 'smart@example.com' && (
+        {(user?.email === 'smart@example.com' || user?.user_metadata?.display_name === 'Smart' || user?.email?.includes('padmin')) && (
           <Card className="p-4">
             <div className="flex items-center space-x-3 mb-4">
               <SettingsIcon className="w-5 h-5 text-muted-foreground" />
@@ -162,7 +162,7 @@ const Settings = () => {
               className="w-full"
               variant="outline"
             >
-              Tableau de bord
+              Tableau de bord administrateur
             </Button>
           </Card>
         )}
