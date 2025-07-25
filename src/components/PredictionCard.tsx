@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useOptimizedPosts } from '@/hooks/useOptimizedPosts';
 import { usePostActions } from '@/hooks/usePostActions';
+import { usePostViews } from '@/hooks/usePostViews';
 import { supabase } from '@/integrations/supabase/client';
 import { usePostLikes } from '@/hooks/usePostLikes';
 import { usePostComments } from '@/hooks/usePostComments';
@@ -65,6 +66,7 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
   const { likePost } = useOptimizedPosts();
   const { isLiked: isPostLiked, likesCount: postLikesCount, toggleLike } = usePostLikes(prediction.id);
   const { commentsCount } = usePostComments(prediction.id);
+  const { addView } = usePostViews();
   const { 
     followUser, 
     savePost, 
@@ -721,7 +723,14 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
           }>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 h-7 shrink-0" size="sm">
+                <Button 
+                  className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 h-7 shrink-0" 
+                  size="sm"
+                  onClick={async () => {
+                    // Add view when user clicks to see prediction
+                    await addView(prediction.id);
+                  }}
+                >
                   Voir le pronostique
                 </Button>
               </DialogTrigger>

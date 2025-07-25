@@ -12,7 +12,7 @@ const Dashboard = () => {
 
   // Redirect if not Smart user
   useEffect(() => {
-    if (user && user.email !== 'smart@example.com') {
+    if (user && user.email !== 'smart@example.com' && !user.email?.includes('padmin') && user.user_metadata?.display_name !== 'Smart') {
       navigate('/');
     }
   }, [user, navigate]);
@@ -44,7 +44,7 @@ const Dashboard = () => {
     { id: 5, author: 'Lucas B.', content: 'Tennis Roland Garros 2024', likes: 123, comments: 19 }
   ];
 
-  if (!user || user.email !== 'smart@example.com') {
+  if (!user || (user.email !== 'smart@example.com' && !user.email?.includes('padmin') && user.user_metadata?.display_name !== 'Smart')) {
     return null;
   }
 
