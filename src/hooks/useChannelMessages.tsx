@@ -261,7 +261,53 @@ export const useChannelMessages = (channelId: string, creatorId: string) => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
+          schema: 'public',
+          table: 'channel_messages',
+          filter: `channel_id=eq.${channelId}`
+        },
+        async (payload) => {
+          console.log('New message received:', payload);
+          
+          // Fetch the complete message with user profile data
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('user_id', payload.new.user_id)
+            .single();
+
+          const formattedMessage: ChannelMessage = {
+            id: payload.new.id,
+            channel_id: payload.new.channel_id,
+            user_id: payload.new.user_id,
+            content: payload.new.content,
+            created_at: payload.new.created_at,
+            username: profile?.username || 'Utilisateur',
+            avatar_url: profile?.avatar_url,
+            media_url: payload.new.media_url,
+            media_type: payload.new.media_type as 'image' | 'video' | 'audio' | 'file' | undefined,
+            media_filename: payload.new.media_filename
+          };
+          
+          setMessages(prev => [...prev, formattedMessage]);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'channel_messages',
+          filter: `channel_id=eq.${channelId}`
+        },
+        () => {
+          fetchMessages();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
           schema: 'public',
           table: 'channel_messages',
           filter: `channel_id=eq.${channelId}`
