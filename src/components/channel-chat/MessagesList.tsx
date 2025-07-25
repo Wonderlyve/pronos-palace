@@ -8,9 +8,11 @@ interface MessagesListProps {
   loading: boolean;
   isCreator: boolean;
   creatorId?: string;
+  onEditMessage?: (messageId: string, newContent: string) => Promise<boolean>;
+  onDeleteMessage?: (messageId: string) => Promise<boolean>;
 }
 
-const MessagesList = ({ messages, loading, isCreator, creatorId }: MessagesListProps) => {
+const MessagesList = ({ messages, loading, isCreator, creatorId, onEditMessage, onDeleteMessage }: MessagesListProps) => {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -53,6 +55,8 @@ const MessagesList = ({ messages, loading, isCreator, creatorId }: MessagesListP
               message={message}
               isCreator={message.user_id === creatorId}
               creatorId={creatorId}
+              onEdit={onEditMessage}
+              onDelete={onDeleteMessage}
             />
           ))}
         </div>

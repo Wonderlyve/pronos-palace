@@ -65,7 +65,15 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
     fetchChannelInfo();
   }, [channelId]);
 
-  const { messages, loading, isCreator, sendMessage: sendChannelMessage } = useChannelMessages(
+  const { 
+    messages, 
+    loading, 
+    isCreator, 
+    isSubscribed,
+    sendMessage: sendChannelMessage,
+    editMessage,
+    deleteMessage
+  } = useChannelMessages(
     channelId, 
     channelInfo?.creator_id || ''
   );
@@ -92,9 +100,11 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
         loading={loading}
         isCreator={isCreator}
         creatorId={channelInfo?.creator_id}
+        onEditMessage={editMessage}
+        onDeleteMessage={deleteMessage}
       />
       
-      {isCreator ? (
+      {(isCreator || isSubscribed) ? (
         <MediaInput
           newMessage={newMessage}
           setNewMessage={setNewMessage}
@@ -105,7 +115,7 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
           <div className="text-center py-2">
             <div className="flex items-center justify-center space-x-2 text-gray-500">
               <Lock className="w-4 h-4" />
-              <span className="text-sm">Seul le créateur peut publier dans ce canal</span>
+              <span className="text-sm">Vous devez être abonné pour écrire dans ce canal</span>
             </div>
           </div>
         </div>
