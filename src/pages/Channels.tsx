@@ -37,7 +37,7 @@ const Channels = () => {
       if (user) {
         const { data } = await supabase
           .from('profiles')
-          .select('badge')
+          .select('badge, username')
           .eq('user_id', user.id)
           .single();
         setUserProfile(data);
@@ -60,6 +60,20 @@ const Channels = () => {
     if (result) {
       setShowCreateModal(false);
       setNewChannel({ name: '', description: '', price: 0 });
+    }
+  };
+
+  const createFreeChannel = async () => {
+    const defaultChannelData = {
+      name: `Canal de ${userProfile?.username || user?.email?.split('@')[0] || 'Utilisateur'}`,
+      description: 'Canal gratuit ouvert à tous',
+      price: 0
+    };
+
+    const result = await createChannelHook(defaultChannelData);
+    if (result) {
+      setShowWarningDialog(false);
+      toast.success('Canal gratuit créé avec succès !');
     }
   };
 
@@ -204,9 +218,21 @@ const Channels = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogAction onClick={() => setShowWarningDialog(false)}>
-                Compris
-              </AlertDialogAction>
+              <div className="flex space-x-2 w-full">
+                <Button 
+                  onClick={() => setShowWarningDialog(false)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Compris
+                </Button>
+                <Button 
+                  onClick={createFreeChannel}
+                  className="flex-1 bg-green-500 hover:bg-green-600 text-white"
+                >
+                  Créer un canal gratuit
+                </Button>
+              </div>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
