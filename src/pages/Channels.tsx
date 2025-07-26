@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Plus, Lock, Users, MessageCircle, Crown, ArrowLeft, MoreVertical, Info, Heart, UserMinus, Share, Bell, BellOff } from 'lucide-react';
+import { Plus, Lock, Users, MessageCircle, Crown, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -30,7 +30,7 @@ const Channels = () => {
     description: '',
     price: 0
   });
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  
 
   // Check user badge from profiles table
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -87,30 +87,6 @@ const Channels = () => {
     }
   };
 
-  const handleCreateVipPost = () => {
-    toast.info('Création d\'un post VIP - Fonctionnalité en développement');
-  };
-
-  const handleChannelInfo = () => {
-    toast.info('Informations du canal - Fonctionnalité en développement');
-  };
-
-  const handleAddToFavorites = () => {
-    toast.success('Canal ajouté aux favoris !');
-  };
-
-  const handleUnsubscribe = () => {
-    toast.success('Désabonnement effectué !');
-  };
-
-  const handleInvite = () => {
-    toast.info('Invitation - Fonctionnalité en développement');
-  };
-
-  const handleToggleNotifications = () => {
-    setNotificationsEnabled(!notificationsEnabled);
-    toast.success(`Notifications ${!notificationsEnabled ? 'activées' : 'désactivées'} !`);
-  };
 
   if (selectedChannel) {
     return (
@@ -167,56 +143,7 @@ const Channels = () => {
               <p className="text-green-100 text-sm">Analyses exclusives des pros</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Crown className="w-8 h-8 text-yellow-300" />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/20"
-                >
-                  <MoreVertical className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                {selectedChannel && user?.id === selectedChannel.creator_id && (
-                  <>
-                    <DropdownMenuItem onClick={handleCreateVipPost}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Créer un post VIP
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
-                <DropdownMenuItem onClick={handleChannelInfo}>
-                  <Info className="w-4 h-4 mr-2" />
-                  Info du canal
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleAddToFavorites}>
-                  <Heart className="w-4 h-4 mr-2" />
-                  Ajouter aux favoris
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleUnsubscribe}>
-                  <UserMinus className="w-4 h-4 mr-2" />
-                  Se désabonner
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleInvite}>
-                  <Share className="w-4 h-4 mr-2" />
-                  Inviter
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleToggleNotifications}>
-                  {notificationsEnabled ? (
-                    <BellOff className="w-4 h-4 mr-2" />
-                  ) : (
-                    <Bell className="w-4 h-4 mr-2" />
-                  )}
-                  {notificationsEnabled ? 'Désactiver notifications' : 'Activer notifications'}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <Crown className="w-8 h-8 text-yellow-300" />
         </div>
       </div>
 
