@@ -474,6 +474,50 @@ export type Database = {
         }
         Relationships: []
       }
+      vip_pronos: {
+        Row: {
+          channel_id: string
+          created_at: string
+          creator_id: string
+          description: string
+          id: string
+          image_url: string | null
+          prediction_text: string
+          total_odds: number
+          updated_at: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          creator_id: string
+          description: string
+          id?: string
+          image_url?: string | null
+          prediction_text: string
+          total_odds: number
+          updated_at?: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          creator_id?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          prediction_text?: string
+          total_odds?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vip_pronos_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

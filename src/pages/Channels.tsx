@@ -244,7 +244,11 @@ const Channels = () => {
         {channels.length > 0 ? (
           <div className="space-y-4">
             {channels.map((channel) => (
-              <Card key={channel.id} className="overflow-hidden">
+              <Card 
+                key={channel.id} 
+                className="overflow-hidden cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => joinChannel(channel)}
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -282,14 +286,10 @@ const Channels = () => {
                         {channel.subscriber_count} abonnés
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => joinChannel(channel)}
-                      className="bg-green-500 hover:bg-green-600 px-3 py-1 h-8 text-xs"
-                    >
-                      <MessageCircle className="w-3 h-3 mr-1" />
+                    <div className="flex items-center text-xs text-gray-500">
+                      <MessageCircle className="w-4 h-4 mr-1" />
                       {isSubscribed(channel.id) ? 'Entrer' : 'Rejoindre'}
-                    </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
