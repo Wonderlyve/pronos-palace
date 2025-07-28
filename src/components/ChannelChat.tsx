@@ -88,16 +88,17 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
   const handleSendMessage = async (mediaFiles?: File[]) => {
     if (!newMessage.trim() && !mediaFiles?.length) return;
     
-    // Ajouter info de réponse si on répond à un message
-    let finalContent = newMessage;
-    if (replyingTo) {
-      finalContent = `@${replyingTo.username || 'Utilisateur'}: ${newMessage}`;
-      setReplyingTo(null);
-    }
+    const replyData = replyingTo ? {
+      id: replyingTo.id,
+      content: replyingTo.content,
+      username: replyingTo.username,
+      media_type: replyingTo.media_type
+    } : undefined;
     
-    const success = await sendChannelMessage(finalContent, mediaFiles);
+    const success = await sendChannelMessage(newMessage, mediaFiles, replyData);
     if (success) {
       setNewMessage('');
+      setReplyingTo(null);
     }
   };
 

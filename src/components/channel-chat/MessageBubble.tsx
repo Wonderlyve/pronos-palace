@@ -197,6 +197,27 @@ const MessageBubble = ({ message, isCreator, creatorId, onEdit, onDelete, onRepl
                   </div>
                 ) : (
                   <>
+                    {/* Aperçu de réponse */}
+                    {message.reply_to_id && (
+                      <div className="mb-2 p-2 bg-gray-100 border-l-4 border-blue-400 rounded-r text-xs">
+                        <div className="flex items-center space-x-1 mb-1">
+                          <span className="font-medium text-blue-600">
+                            {message.reply_to_username || 'Utilisateur'}
+                          </span>
+                        </div>
+                        <div className="text-gray-600 line-clamp-2">
+                          {message.reply_to_media_type && !message.reply_to_content ? (
+                            <div className="flex items-center space-x-1">
+                              <span>📎</span>
+                              <span className="capitalize">{message.reply_to_media_type}</span>
+                            </div>
+                          ) : (
+                            message.reply_to_content || 'Message'
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {message.content && (
                       <div className="break-words text-sm leading-relaxed">
                         {message.content}
