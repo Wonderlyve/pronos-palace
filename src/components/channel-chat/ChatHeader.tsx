@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Users, Crown, MoreVertical, Plus, Info, Heart, UserMinus, Share, Bell, BellOff } from 'lucide-react';
+import { ArrowLeft, Users, Crown, MoreVertical, Plus, Info, Heart, UserMinus, Share, Bell, BellOff, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -20,14 +20,21 @@ interface ChatHeaderProps {
   channelName: string;
   channelInfo: ChannelInfo | null;
   onBack: () => void;
+  onCreateVipProno?: () => void;
 }
 
-const ChatHeader = ({ channelName, channelInfo, onBack }: ChatHeaderProps) => {
+const ChatHeader = ({ channelName, channelInfo, onBack, onCreateVipProno }: ChatHeaderProps) => {
   const { user } = useAuth();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
-  const handleCreateVipPost = () => {
-    toast.info('Création d\'un post VIP - Fonctionnalité en développement');
+  const handleCreateVipProno = () => {
+    if (onCreateVipProno) {
+      onCreateVipProno();
+    }
+  };
+
+  const handleCreateDebriefing = () => {
+    toast.info('Création d\'un débriefing - Fonctionnalité en développement');
   };
 
   const handleChannelInfo = () => {
@@ -101,9 +108,13 @@ const ChatHeader = ({ channelName, channelInfo, onBack }: ChatHeaderProps) => {
           <DropdownMenuContent align="end" className="w-56">
             {channelInfo && user?.id === channelInfo.creator_id && (
               <>
-                <DropdownMenuItem onClick={handleCreateVipPost}>
+                <DropdownMenuItem onClick={handleCreateVipProno}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Créer un post VIP
+                  Créer prono VIP
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCreateDebriefing}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Créer un débriefing
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </>

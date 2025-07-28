@@ -12,9 +12,10 @@ interface MessageBubbleProps {
   creatorId?: string;
   onEdit?: (messageId: string, newContent: string) => Promise<boolean>;
   onDelete?: (messageId: string) => Promise<boolean>;
+  onReply?: (message: ChannelMessage) => void;
 }
 
-const MessageBubble = ({ message, isCreator, creatorId, onEdit, onDelete }: MessageBubbleProps) => {
+const MessageBubble = ({ message, isCreator, creatorId, onEdit, onDelete, onReply }: MessageBubbleProps) => {
   const { user } = useAuth();
   const isFromCreator = message.user_id === creatorId;
   const isOwner = user?.id === message.user_id;
@@ -22,6 +23,8 @@ const MessageBubble = ({ message, isCreator, creatorId, onEdit, onDelete }: Mess
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content || '');
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [startX, setStartX] = useState(0);
   const messageRef = useRef<HTMLDivElement>(null);
   
   const { groupedReactions, toggleReaction } = useMessageReactions(message.id);
@@ -82,6 +85,38 @@ const MessageBubble = ({ message, isCreator, creatorId, onEdit, onDelete }: Mess
     setIsEditing(false);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setStartX(e.touches[0].clientX);
+    handleLongPressStart();
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const currentX = e.touches[0].clientX;
+    const diffX = currentX - startX;
+    
+    // Permettre le swipe vers la droite pour répondre
+    if (diffX > 0 && diffX < 100) {
+      setSwipeOffset(diffX);
+    }
+    
+    // Annuler l'appui long si on swipe
+    if (Math.abs(diffX) > 10) {
+      handleLongPressEnd();
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diffX = swipeOffset;
+    
+    // Si swipe > 50px, déclencher la réponse
+    if (diffX > 50 && onReply) {
+      onReply(message);
+    }
+    
+    setSwipeOffset(0);
+    handleLongPressEnd();
+  };
+
   useEffect(() => {
     return () => {
       if (longPressTimer) {
@@ -120,16 +155,18 @@ const MessageBubble = ({ message, isCreator, creatorId, onEdit, onDelete }: Mess
             trigger={
               <div 
                 ref={messageRef}
-                className={`rounded-2xl px-4 py-2 shadow-sm cursor-pointer select-none ${
+                className={`rounded-2xl px-4 py-2 shadow-sm cursor-pointer select-none transition-transform ${
                   isFromCreator 
                     ? 'bg-white border border-gray-200 text-gray-900' 
                     : 'bg-blue-500 text-white'
                 }`}
+                style={{ transform: `translateX(${swipeOffset}px)` }}
                 onMouseDown={handleLongPressStart}
                 onMouseUp={handleLongPressEnd}
                 onMouseLeave={handleLongPressEnd}
-                onTouchStart={handleLongPressStart}
-                onTouchEnd={handleLongPressEnd}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               >
                 {/* Edition mode */}
                 {isEditing && message.content ? (

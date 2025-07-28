@@ -10,9 +10,10 @@ interface MessagesListProps {
   creatorId?: string;
   onEditMessage?: (messageId: string, newContent: string) => Promise<boolean>;
   onDeleteMessage?: (messageId: string) => Promise<boolean>;
+  onReply?: (message: ChannelMessage) => void;
 }
 
-const MessagesList = ({ messages, loading, isCreator, creatorId, onEditMessage, onDeleteMessage }: MessagesListProps) => {
+const MessagesList = ({ messages, loading, isCreator, creatorId, onEditMessage, onDeleteMessage, onReply }: MessagesListProps) => {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -57,6 +58,7 @@ const MessagesList = ({ messages, loading, isCreator, creatorId, onEditMessage, 
               creatorId={creatorId}
               onEdit={onEditMessage}
               onDelete={onDeleteMessage}
+              onReply={onReply}
             />
           ))}
         </div>
