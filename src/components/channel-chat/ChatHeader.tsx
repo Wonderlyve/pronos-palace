@@ -21,9 +21,10 @@ interface ChatHeaderProps {
   channelInfo: ChannelInfo | null;
   onBack: () => void;
   onCreateVipProno?: () => void;
+  className?: string;
 }
 
-const ChatHeader = ({ channelName, channelInfo, onBack, onCreateVipProno }: ChatHeaderProps) => {
+const ChatHeader = ({ channelName, channelInfo, onBack, onCreateVipProno, className }: ChatHeaderProps) => {
   const { user } = useAuth();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
@@ -59,7 +60,7 @@ const ChatHeader = ({ channelName, channelInfo, onBack, onCreateVipProno }: Chat
   };
 
   return (
-    <div className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-10">
+    <div className={`bg-white border-b border-gray-200 px-4 py-3 ${className || 'sticky top-0 z-10'}`}>
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center space-x-2">
           <Button

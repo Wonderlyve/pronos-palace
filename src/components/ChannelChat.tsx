@@ -128,30 +128,33 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
         channelInfo={channelInfo}
         onBack={onBack}
         onCreateVipProno={() => setShowVipPronoModal(true)}
+        className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200"
       />
       
-      <MessagesList 
-        messages={messages}
-        pronos={pronos}
-        loading={loading}
-        isCreator={isCreator}
-        creatorId={channelInfo?.creator_id}
-        onEditMessage={editMessage}
-        onDeleteMessage={deleteMessage}
-        onReply={handleReply}
-        onReplyToProno={(prono) => {
-          setReplyingTo({
-            id: `prono-${prono.id}`,
-            content: `${prono.description} - ${prono.prediction_text}`,
-            username: prono.creator_username || 'Créateur',
-            user_id: prono.creator_id,
-            created_at: prono.created_at,
-            media_url: null,
-            media_type: null,
-            media_filename: null
-          } as any);
-        }}
-      />
+      <div className="flex-1 pt-16 pb-24">
+        <MessagesList 
+          messages={messages}
+          pronos={pronos}
+          loading={loading}
+          isCreator={isCreator}
+          creatorId={channelInfo?.creator_id}
+          onEditMessage={editMessage}
+          onDeleteMessage={deleteMessage}
+          onReply={handleReply}
+          onReplyToProno={(prono) => {
+            setReplyingTo({
+              id: `prono-${prono.id}`,
+              content: `${prono.description} - ${prono.prediction_text}`,
+              username: prono.creator_username || 'Créateur',
+              user_id: prono.creator_id,
+              created_at: prono.created_at,
+              media_url: null,
+              media_type: null,
+              media_filename: null
+            } as any);
+          }}
+        />
+      </div>
       
       {(isCreator || isSubscribed) ? (
         <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white z-50">
