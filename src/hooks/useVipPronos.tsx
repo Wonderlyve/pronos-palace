@@ -120,35 +120,6 @@ export const useVipPronos = (channelId: string) => {
     }
   };
 
-  const deleteVipProno = async (pronoId: string) => {
-    if (!user) {
-      toast.error('Vous devez être connecté pour supprimer un prono VIP');
-      return false;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('vip_pronos')
-        .delete()
-        .eq('id', pronoId)
-        .eq('creator_id', user.id);
-
-      if (error) {
-        console.error('Error deleting VIP prono:', error);
-        toast.error('Erreur lors de la suppression du prono VIP');
-        return false;
-      }
-
-      toast.success('Prono VIP supprimé avec succès');
-      fetchVipPronos(); // Refresh the list
-      return true;
-    } catch (error) {
-      console.error('Error deleting VIP prono:', error);
-      toast.error('Erreur lors de la suppression du prono VIP');
-      return false;
-    }
-  };
-
   useEffect(() => {
     fetchVipPronos();
   }, [channelId]);
@@ -182,7 +153,6 @@ export const useVipPronos = (channelId: string) => {
     pronos,
     loading,
     createVipProno,
-    deleteVipProno,
     refetch: fetchVipPronos
   };
 };
