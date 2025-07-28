@@ -130,42 +130,28 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
         onCreateVipProno={() => setShowVipPronoModal(true)}
       />
       
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-24">
-        {/* Afficher les pronos VIP en premier */}
-        {pronos.map((prono) => (
-          <VipPronoCard
-            key={prono.id}
-            totalOdds={prono.total_odds}
-            imageUrl={prono.image_url}
-            description={prono.description}
-            predictionText={prono.prediction_text}
-            createdAt={prono.created_at}
-            creatorUsername={prono.creator_username}
-            onReply={(pronoData) => {
-              setReplyingTo({
-                id: `prono-${prono.id}`,
-                content: pronoData.content,
-                username: pronoData.creatorUsername || 'Créateur',
-                user_id: prono.creator_id,
-                created_at: prono.created_at,
-                media_url: null,
-                media_type: null,
-                media_filename: null
-              } as any);
-            }}
-          />
-        ))}
-
-        <MessagesList 
-          messages={messages}
-          loading={loading}
-          isCreator={isCreator}
-          creatorId={channelInfo?.creator_id}
-          onEditMessage={editMessage}
-          onDeleteMessage={deleteMessage}
-          onReply={handleReply}
-        />
-      </div>
+      <MessagesList 
+        messages={messages}
+        pronos={pronos}
+        loading={loading}
+        isCreator={isCreator}
+        creatorId={channelInfo?.creator_id}
+        onEditMessage={editMessage}
+        onDeleteMessage={deleteMessage}
+        onReply={handleReply}
+        onReplyToProno={(prono) => {
+          setReplyingTo({
+            id: `prono-${prono.id}`,
+            content: `${prono.description} - ${prono.prediction_text}`,
+            username: prono.creator_username || 'Créateur',
+            user_id: prono.creator_id,
+            created_at: prono.created_at,
+            media_url: null,
+            media_type: null,
+            media_filename: null
+          } as any);
+        }}
+      />
       
       {(isCreator || isSubscribed) ? (
         <div className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white z-50">
