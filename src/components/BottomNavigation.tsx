@@ -1,18 +1,38 @@
 
 import { Home, Video, User, Plus, Crown } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import CreatePredictionModal from './CreatePredictionModal';
+import DebriefingModal from './channel-chat/DebriefingModal';
+import { useDebriefings } from '@/hooks/useDebriefings';
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, requireAuth } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showBriefModal, setShowBriefModal] = useState(false);
+  const { createDebriefing } = useDebriefings('general');
   
   const handleCreateClick = () => {
     if (requireAuth()) {
-      setShowCreateModal(true);
+      if (location.pathname === '/brief') {
+        setShowBriefModal(true);
+      } else {
+        setShowCreateModal(true);
+      }
+    }
+  };
+
+  const handleCreateBrief = async (briefData: any) => {
+    const success = await createDebriefing({
+      ...briefData,
+      channelId: 'general'
+    });
+    
+    if (success) {
+      setShowBriefModal(false);
     }
   };
 
@@ -71,10 +91,17 @@ const BottomNavigation = () => {
       </div>
       
       {user && (
-        <CreatePredictionModal 
-          open={showCreateModal} 
-          onOpenChange={setShowCreateModal} 
-        />
+        <>
+          <CreatePredictionModal 
+            open={showCreateModal} 
+            onOpenChange={setShowCreateModal} 
+          />
+          <DebriefingModal
+            isOpen={showBriefModal}
+            onClose={() => setShowBriefModal(false)}
+            onSubmit={handleCreateBrief}
+          />
+        </>
       )}
     </>
   );
