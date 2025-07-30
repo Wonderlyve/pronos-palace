@@ -174,14 +174,6 @@ const Brief = () => {
         </div>
       </div>
 
-      {/* Floating Create Brief Button */}
-      <Button
-        onClick={() => setShowCreateModal(true)}
-        className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg z-20"
-        size="icon"
-      >
-        <Plus className="w-6 h-6" />
-      </Button>
 
       {/* Create Brief Modal */}
       <DebriefingModal
