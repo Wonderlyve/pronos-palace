@@ -28,7 +28,7 @@ const BottomNavigation = () => {
     { icon: Home, label: 'Accueil', active: true, action: () => navigate('/') },
     { icon: Crown, label: 'Canaux', active: false, action: () => navigate('/channels') },
     { icon: Plus, label: '', active: false, action: handleCreateClick, isCenter: true },
-    { icon: Video, label: 'Lives', active: false, action: () => navigate('/lives') },
+    { icon: Video, label: 'Brief', active: false, action: () => navigate('/brief') },
     { icon: User, label: user ? 'Profil' : 'Connexion', active: false, action: handleProfileClick },
   ];
 

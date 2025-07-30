@@ -21,10 +21,11 @@ interface ChatHeaderProps {
   channelInfo: ChannelInfo | null;
   onBack: () => void;
   onCreateVipProno?: () => void;
+  onCreateDebriefing?: () => void;
   className?: string;
 }
 
-const ChatHeader = ({ channelName, channelInfo, onBack, onCreateVipProno, className }: ChatHeaderProps) => {
+const ChatHeader = ({ channelName, channelInfo, onBack, onCreateVipProno, onCreateDebriefing, className }: ChatHeaderProps) => {
   const { user } = useAuth();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
@@ -35,7 +36,9 @@ const ChatHeader = ({ channelName, channelInfo, onBack, onCreateVipProno, classN
   };
 
   const handleCreateDebriefing = () => {
-    toast.info('Création d\'un débriefing - Fonctionnalité en développement');
+    if (onCreateDebriefing) {
+      onCreateDebriefing();
+    }
   };
 
   const handleChannelInfo = () => {

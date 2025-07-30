@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Lock } from 'lucide-react';
 import { useChannelMessages, ChannelMessage } from '@/hooks/useChannelMessages';
 import { useVipPronos } from '@/hooks/useVipPronos';
+import { useDebriefings } from '@/hooks/useDebriefings';
 import { supabase } from '@/integrations/supabase/client';
 import ChatHeader from './channel-chat/ChatHeader';
 import MessagesList from './channel-chat/MessagesList';
 import MediaInput from './channel-chat/MediaInput';
 import MessageReply from './channel-chat/MessageReply';
 import VipPronoModal, { VipPronoData } from './channel-chat/VipPronoModal';
+import DebriefingModal, { DebriefingData } from './channel-chat/DebriefingModal';
 import VipPronoCard from './channel-chat/VipPronoCard';
 
 interface ChannelInfo {
@@ -31,6 +33,7 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
   const [channelInfo, setChannelInfo] = useState<ChannelInfo | null>(null);
   const [replyingTo, setReplyingTo] = useState<ChannelMessage | null>(null);
   const [showVipPronoModal, setShowVipPronoModal] = useState(false);
+  const [showDebriefingModal, setShowDebriefingModal] = useState(false);
 
   // Fetch channel info first, then use it to initialize the messages hook
   useEffect(() => {
@@ -84,6 +87,7 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
   );
 
   const { pronos, createVipProno } = useVipPronos(channelId);
+  const { debriefings, createDebriefing, likeDebriefing, deleteDebriefing } = useDebriefings(channelId);
 
   const handleSendMessage = async (mediaFiles?: File[]) => {
     if (!newMessage.trim() && !mediaFiles?.length) return;
@@ -121,6 +125,17 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
     }
   };
 
+  const handleCreateDebriefing = async (debriefingData: DebriefingData) => {
+    const success = await createDebriefing({
+      ...debriefingData,
+      channelId
+    });
+    
+    if (success) {
+      setShowDebriefingModal(false);
+    }
+  };
+
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
       <ChatHeader 
@@ -128,6 +143,7 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
         channelInfo={channelInfo}
         onBack={onBack}
         onCreateVipProno={() => setShowVipPronoModal(true)}
+        onCreateDebriefing={() => setShowDebriefingModal(true)}
         className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200"
       />
       
@@ -135,6 +151,7 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
         <MessagesList 
           messages={messages}
           pronos={pronos}
+          debriefings={debriefings}
           loading={loading}
           isCreator={isCreator}
           creatorId={channelInfo?.creator_id}
@@ -153,6 +170,8 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
               media_filename: null
             } as any);
           }}
+          onLikeDebriefing={likeDebriefing}
+          onDeleteDebriefing={isCreator ? deleteDebriefing : undefined}
         />
       </div>
       
@@ -183,6 +202,12 @@ const ChannelChat = ({ channelId, channelName, onBack }: ChannelChatProps) => {
         isOpen={showVipPronoModal}
         onClose={() => setShowVipPronoModal(false)}
         onSubmit={handleCreateVipProno}
+      />
+
+      <DebriefingModal
+        isOpen={showDebriefingModal}
+        onClose={() => setShowDebriefingModal(false)}
+        onSubmit={handleCreateDebriefing}
       />
     </div>
   );

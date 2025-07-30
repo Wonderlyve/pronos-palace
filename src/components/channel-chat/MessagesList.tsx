@@ -4,12 +4,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { ChannelMessage } from '@/hooks/useChannelMessages';
 import { VipProno } from '@/hooks/useVipPronos';
+import { Debriefing } from '@/hooks/useDebriefings';
 import MessageBubble from './MessageBubble';
 import VipPronoCard from './VipPronoCard';
+import DebriefingCard from './DebriefingCard';
 
 interface MessagesListProps {
   messages: ChannelMessage[];
   pronos: VipProno[];
+  debriefings: Debriefing[];
   loading: boolean;
   isCreator: boolean;
   creatorId?: string;
@@ -17,19 +20,21 @@ interface MessagesListProps {
   onDeleteMessage?: (messageId: string) => Promise<boolean>;
   onReply?: (message: ChannelMessage) => void;
   onReplyToProno?: (prono: VipProno) => void;
+  onLikeDebriefing: (debriefingId: string) => void;
+  onDeleteDebriefing?: (debriefingId: string) => void;
 }
 
-const MessagesList = ({ messages, pronos, loading, isCreator, creatorId, onEditMessage, onDeleteMessage, onReply, onReplyToProno }: MessagesListProps) => {
+const MessagesList = ({ messages, pronos, debriefings, loading, isCreator, creatorId, onEditMessage, onDeleteMessage, onReply, onReplyToProno, onLikeDebriefing, onDeleteDebriefing }: MessagesListProps) => {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const scrollAreaRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Combiner messages et pronos par ordre chronologique
-  const combinedItems = [...messages, ...pronos.map(prono => ({
-    ...prono,
-    type: 'prono' as const,
-    created_at: prono.created_at
-  }))].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  // Combiner messages, pronos et débriefings par ordre chronologique
+  const combinedItems = [
+    ...messages.map(msg => ({ ...msg, type: 'message' as const })),
+    ...pronos.map(prono => ({ ...prono, type: 'prono' as const })),
+    ...debriefings.map(debriefing => ({ ...debriefing, type: 'debriefing' as const }))
+  ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
   // Auto-scroll au bas à l'ouverture et quand de nouveaux messages arrivent
   useEffect(() => {
@@ -89,32 +94,45 @@ const MessagesList = ({ messages, pronos, loading, isCreator, creatorId, onEditM
         onScrollCapture={handleScroll}
       >
         <div className="px-4 py-6 space-y-6 pb-24">
-          {combinedItems.map((item) => (
-            'type' in item && item.type === 'prono' ? (
-              <VipPronoCard
-                key={`prono-${item.id}`}
-                totalOdds={item.total_odds}
-                imageUrl={item.image_url}
-                description={item.description}
-                predictionText={item.prediction_text}
-                createdAt={item.created_at}
-                creatorUsername={item.creator_username}
-                onReply={(pronoData) => {
-                  onReplyToProno?.(item);
-                }}
-              />
-            ) : (
-              <MessageBubble
-                key={item.id}
-                message={item as ChannelMessage}
-                isCreator={('user_id' in item ? item.user_id : item.creator_id) === creatorId}
-                creatorId={creatorId}
-                onEdit={onEditMessage}
-                onDelete={onDeleteMessage}
-                onReply={onReply}
-              />
-            )
-          ))}
+          {combinedItems.map((item) => {
+            if (item.type === 'prono') {
+              return (
+                <VipPronoCard
+                  key={`prono-${item.id}`}
+                  totalOdds={item.total_odds}
+                  imageUrl={item.image_url}
+                  description={item.description}
+                  predictionText={item.prediction_text}
+                  createdAt={item.created_at}
+                  creatorUsername={item.creator_username}
+                  onReply={() => onReplyToProno?.(item as VipProno)}
+                />
+              );
+            } else if (item.type === 'debriefing') {
+              return (
+                <DebriefingCard
+                  key={`debriefing-${item.id}`}
+                  debriefing={item as Debriefing}
+                  isCreator={isCreator}
+                  onLike={onLikeDebriefing}
+                  onDelete={onDeleteDebriefing}
+                />
+              );
+            } else {
+              const messageItem = item as ChannelMessage;
+              return (
+                <MessageBubble
+                  key={item.id}
+                  message={messageItem}
+                  isCreator={messageItem.user_id === creatorId}
+                  creatorId={creatorId}
+                  onEdit={onEditMessage}
+                  onDelete={onDeleteMessage}
+                  onReply={onReply}
+                />
+              );
+            }
+          })}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
