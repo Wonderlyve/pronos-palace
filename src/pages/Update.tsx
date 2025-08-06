@@ -26,7 +26,13 @@ const Update = () => {
   });
 
   // Vérifier si l'utilisateur est Smart
+  console.log('Current user:', user);
+  console.log('User email:', user?.email);
+  console.log('User metadata:', user?.user_metadata);
+  console.log('Display name:', user?.user_metadata?.display_name);
+  
   const isSmartUser = user?.email === 'smart@example.com' || user?.user_metadata?.display_name === 'Smart';
+  console.log('Is Smart user:', isSmartUser);
 
   if (!isSmartUser) {
     return (
