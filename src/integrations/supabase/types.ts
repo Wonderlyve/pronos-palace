@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_versions: {
+        Row: {
+          apk_url: string
+          created_at: string
+          id: string
+          is_active: boolean
+          release_notes: string | null
+          updated_at: string
+          version_code: number
+          version_name: string
+        }
+        Insert: {
+          apk_url: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          release_notes?: string | null
+          updated_at?: string
+          version_code: number
+          version_name: string
+        }
+        Update: {
+          apk_url?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          release_notes?: string | null
+          updated_at?: string
+          version_code?: number
+          version_name?: string
+        }
+        Relationships: []
+      }
       blocked_users: {
         Row: {
           blocked_id: string
@@ -241,6 +274,153 @@ export type Database = {
           },
         ]
       }
+      debriefing_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      debriefing_comments: {
+        Row: {
+          content: string
+          created_at: string
+          debriefing_id: string
+          id: string
+          likes: number
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          debriefing_id: string
+          id?: string
+          likes?: number
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          debriefing_id?: string
+          id?: string
+          likes?: number
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      debriefing_likes: {
+        Row: {
+          created_at: string
+          debriefing_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          debriefing_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          debriefing_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      debriefing_views: {
+        Row: {
+          created_at: string
+          debriefing_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          debriefing_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          debriefing_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      debriefings: {
+        Row: {
+          channel_id: string | null
+          comments: number
+          created_at: string
+          creator_id: string
+          description: string
+          id: string
+          is_public: boolean | null
+          likes: number
+          post_link: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          video_url: string | null
+          views: number
+        }
+        Insert: {
+          channel_id?: string | null
+          comments?: number
+          created_at?: string
+          creator_id: string
+          description: string
+          id?: string
+          is_public?: boolean | null
+          likes?: number
+          post_link?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          video_url?: string | null
+          views?: number
+        }
+        Update: {
+          channel_id?: string | null
+          comments?: number
+          created_at?: string
+          creator_id?: string
+          description?: string
+          id?: string
+          is_public?: boolean | null
+          likes?: number
+          post_link?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          video_url?: string | null
+          views?: number
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string
@@ -322,6 +502,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          content: string
+          created_at: string
+          from_user_id: string | null
+          id: string
+          post_id: string | null
+          read: boolean
+          type: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          from_user_id?: string | null
+          id?: string
+          post_id?: string | null
+          read?: boolean
+          type: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          from_user_id?: string | null
+          id?: string
+          post_id?: string | null
+          read?: boolean
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_likes: {
         Row: {
           created_at: string
@@ -382,16 +595,19 @@ export type Database = {
       posts: {
         Row: {
           analysis: string | null
+          bet_type: string | null
           comments: number | null
           confidence: number | null
           content: string
           created_at: string
+          custom_username: string | null
           id: string
           image_url: string | null
           likes: number | null
           match_teams: string | null
           odds: number | null
           prediction_text: string | null
+          reservation_code: string | null
           shares: number | null
           sport: string | null
           updated_at: string
@@ -401,16 +617,19 @@ export type Database = {
         }
         Insert: {
           analysis?: string | null
+          bet_type?: string | null
           comments?: number | null
           confidence?: number | null
           content: string
           created_at?: string
+          custom_username?: string | null
           id?: string
           image_url?: string | null
           likes?: number | null
           match_teams?: string | null
           odds?: number | null
           prediction_text?: string | null
+          reservation_code?: string | null
           shares?: number | null
           sport?: string | null
           updated_at?: string
@@ -420,16 +639,19 @@ export type Database = {
         }
         Update: {
           analysis?: string | null
+          bet_type?: string | null
           comments?: number | null
           confidence?: number | null
           content?: string
           created_at?: string
+          custom_username?: string | null
           id?: string
           image_url?: string | null
           likes?: number | null
           match_teams?: string | null
           odds?: number | null
           prediction_text?: string | null
+          reservation_code?: string | null
           shares?: number | null
           sport?: string | null
           updated_at?: string
@@ -483,6 +705,144 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      saved_posts: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      stories: {
+        Row: {
+          comments: number
+          content: string | null
+          created_at: string
+          duration: number | null
+          expires_at: string
+          id: string
+          likes: number
+          location: string | null
+          media_type: string | null
+          media_url: string | null
+          updated_at: string
+          user_id: string
+          views: number
+        }
+        Insert: {
+          comments?: number
+          content?: string | null
+          created_at?: string
+          duration?: number | null
+          expires_at?: string
+          id?: string
+          likes?: number
+          location?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          updated_at?: string
+          user_id: string
+          views?: number
+        }
+        Update: {
+          comments?: number
+          content?: string | null
+          created_at?: string
+          duration?: number | null
+          expires_at?: string
+          id?: string
+          likes?: number
+          location?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          updated_at?: string
+          user_id?: string
+          views?: number
+        }
+        Relationships: []
+      }
+      story_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          story_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          story_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          story_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      story_likes: {
+        Row: {
+          created_at: string
+          id: string
+          story_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      story_views: {
+        Row: {
+          created_at: string
+          id: string
+          story_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          story_id?: string
+          user_id?: string
         }
         Relationships: []
       }

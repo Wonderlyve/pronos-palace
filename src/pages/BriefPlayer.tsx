@@ -5,89 +5,87 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import BriefCommentsSheet from '@/components/BriefCommentsSheet';
+import DebriefingCommentsSheet from '@/components/DebriefingCommentsSheet';
+import { useDebriefings } from '@/hooks/useDebriefings';
+import { useDebriefingViews } from '@/hooks/useDebriefingViews';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
-interface Comment {
-  id: number;
-  username: string;
-  message: string;
-  timestamp: string;
-  avatar: string;
-}
 
 const BriefPlayer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { user } = useAuth();
+  const { debriefings, likeDebriefing, fetchPublicDebriefings } = useDebriefings(null);
+  const { addView } = useDebriefingViews();
+
+  useEffect(() => {
+    fetchPublicDebriefings();
+  }, []);
   
   const [isPlaying, setIsPlaying] = useState(false);
-  const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(124);
-  const [views, setViews] = useState(2340);
   const [showComments, setShowComments] = useState(false);
-  const [comment, setComment] = useState('');
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // Mock data pour le brief
-  const briefData = {
-    id: id || '1',
-    title: 'Analyse du match PSG vs Real Madrid',
-    description: 'Débriefing complet de la rencontre avec analyse tactique et moments clés. Cette vidéo couvre les stratégies utilisées par les deux équipes, les changements tactiques en cours de match, et les performances individuelles qui ont marqué cette rencontre exceptionnelle.',
-    creator_username: 'PronoExpert',
-    creator_avatar: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=100&h=100&fit=crop&crop=face',
-    video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    created_at: '2024-01-28T10:30:00Z',
-    sharedLink: 'https://app.example.com/post/123' // Lien vers une publication
-  };
+  // Trouver le débriefing actuel
+  const briefData = debriefings.find(d => d.id === id);
 
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 1,
-      username: 'FootballFan',
-      message: 'Excellente analyse ! Tu as raison sur la tactique du PSG 👏',
-      timestamp: 'Il y a 2h',
-      avatar: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=50&h=50&fit=crop&crop=face'
-    },
-    {
-      id: 2,
-      username: 'BetExpert',
-      message: 'Très bon débriefing, ça m\'aide pour mes prochains paris',
-      timestamp: 'Il y a 1h',
-      avatar: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=50&h=50&fit=crop&crop=face'
-    },
-    {
-      id: 3,
-      username: 'SportLover',
-      message: 'Peux-tu faire la même chose pour la Ligue 1 ?',
-      timestamp: 'Il y a 30min',
-      avatar: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=50&h=50&fit=crop&crop=face'
+  // Ajouter une vue quand on commence à regarder la vidéo
+  useEffect(() => {
+    if (briefData && isPlaying) {
+      addView(briefData.id);
     }
-  ]);
+  }, [briefData, isPlaying, addView]);
 
-  const lastComment = comments[comments.length - 1];
+  useEffect(() => {
+    if (debriefings.length > 0 && !briefData) {
+      navigate('/brief');
+      return;
+    }
+  }, [briefData, navigate, debriefings.length]);
 
-  // Video controls
+  // Video controls and autoplay
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
+      // Auto-play the video when metadata is loaded
+      video.play().then(() => {
+        setIsPlaying(true);
+      }).catch((error) => {
+        console.log('Autoplay failed:', error);
+        // Autoplay failed, user will need to click play
+      });
     };
 
     const handleTimeUpdate = () => {
       setCurrentTime(video.currentTime);
     };
 
+    const handlePlay = () => {
+      setIsPlaying(true);
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+    };
+
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
 
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
     };
-  }, []);
+  }, [briefData]);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -101,28 +99,11 @@ const BriefPlayer = () => {
     setIsPlaying(!isPlaying);
   };
 
-  const handleLike = () => {
-    if (liked) {
-      setLikes(likes - 1);
-    } else {
-      setLikes(likes + 1);
-    }
-    setLiked(!liked);
+  const handleLike = async () => {
+    if (!briefData) return;
+    await likeDebriefing(briefData.id);
   };
 
-  const handleAddComment = () => {
-    if (comment.trim()) {
-      const newComment: Comment = {
-        id: comments.length + 1,
-        username: 'Vous',
-        message: comment,
-        timestamp: 'Maintenant',
-        avatar: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=50&h=50&fit=crop&crop=face'
-      };
-      setComments([...comments, newComment]);
-      setComment('');
-    }
-  };
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -140,6 +121,14 @@ const BriefPlayer = () => {
   };
 
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  if (!briefData) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white">Chargement...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black flex flex-col">
@@ -177,20 +166,18 @@ const BriefPlayer = () => {
           />
           
           {/* Play/Pause Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={togglePlay}
-              className="w-20 h-20 bg-black/30 hover:bg-black/50 text-white rounded-full opacity-0 hover:opacity-100 transition-opacity"
-            >
-              {isPlaying ? (
-                <Pause className="w-10 h-10" />
-              ) : (
+          {!isPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={togglePlay}
+                className="w-20 h-20 bg-black/30 hover:bg-black/50 text-white rounded-full opacity-0 hover:opacity-100 transition-opacity"
+              >
                 <Play className="w-10 h-10 ml-1" />
-              )}
-            </Button>
-          </div>
+              </Button>
+            </div>
+          )}
 
           {/* Video Controls */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
@@ -216,7 +203,7 @@ const BriefPlayer = () => {
           
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <span>{formatViews(views)} vues</span>
+              <span>{formatViews(briefData.views)} vues</span>
               <span>•</span>
               <span>{new Date(briefData.created_at).toLocaleDateString('fr-FR')}</span>
             </div>
@@ -226,10 +213,10 @@ const BriefPlayer = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleLike}
-                className={`flex items-center space-x-1 ${liked ? 'text-red-500' : 'text-gray-600'}`}
+                className={`flex items-center space-x-1 ${briefData.isLiked ? 'text-red-500' : 'text-gray-600'}`}
               >
-                <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
-                <span>{likes}</span>
+                <Heart className={`w-5 h-5 ${briefData.isLiked ? 'fill-current' : ''}`} />
+                <span>{briefData.likes}</span>
               </Button>
               
               <Button
@@ -245,7 +232,7 @@ const BriefPlayer = () => {
           {/* Creator Info */}
           <div className="flex items-center space-x-3 mb-4">
             <img
-              src={briefData.creator_avatar}
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${briefData.creator_id}`}
               alt={briefData.creator_username}
               className="w-10 h-10 rounded-full"
             />
@@ -261,16 +248,16 @@ const BriefPlayer = () => {
           <div className="mb-4">
             <p className="text-gray-700 text-sm leading-relaxed">{briefData.description}</p>
             
-            {briefData.sharedLink && (
+            {briefData.post_link && (
               <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-600 mb-2">Publication partagée :</p>
                 <a 
-                  href={briefData.sharedLink} 
+                  href={briefData.post_link} 
                   className="text-blue-600 text-sm underline"
                   target="_blank" 
                   rel="noopener noreferrer"
                 >
-                  {briefData.sharedLink}
+                  {briefData.post_link}
                 </a>
               </div>
             )}
@@ -279,7 +266,7 @@ const BriefPlayer = () => {
           {/* Comments Preview */}
           <div className="border-t border-gray-200 pt-4">
             <div className="flex items-center justify-between mb-3">
-              <span className="font-medium text-gray-900">Commentaires {comments.length}</span>
+              <span className="font-medium text-gray-900">Commentaires {briefData.comments || 0}</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -290,25 +277,19 @@ const BriefPlayer = () => {
               </Button>
             </div>
             
-            {lastComment && (
-              <div 
-                className="flex items-start space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg -mx-2"
-                onClick={() => setShowComments(true)}
-              >
-                <img
-                  src={lastComment.avatar}
-                  alt={lastComment.username}
-                  className="w-8 h-8 rounded-full"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-medium text-sm text-gray-900">{lastComment.username}</span>
-                    <span className="text-xs text-gray-500">{lastComment.timestamp}</span>
-                  </div>
-                  <p className="text-sm text-gray-700 line-clamp-2">{lastComment.message}</p>
-                </div>
+            <div 
+              className="flex items-start space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg -mx-2"
+              onClick={() => setShowComments(true)}
+            >
+              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                <MessageCircle className="w-4 h-4 text-gray-500" />
               </div>
-            )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-500">
+                  {briefData.comments > 0 ? 'Voir les commentaires' : 'Soyez le premier à commenter'}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -333,14 +314,11 @@ const BriefPlayer = () => {
       </div>
 
       {/* Comments Bottom Sheet */}
-      <BriefCommentsSheet
+      <DebriefingCommentsSheet
         isOpen={showComments}
         onClose={() => setShowComments(false)}
-        comments={comments}
-        onAddComment={handleAddComment}
-        newComment={comment}
-        onCommentChange={setComment}
-        title={`${comments.length} commentaires`}
+        debriefingId={briefData.id}
+        title={`${briefData.comments || 0} commentaires`}
       />
     </div>
   );

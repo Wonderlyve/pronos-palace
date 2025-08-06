@@ -97,5 +97,39 @@
 
   body {
     @apply bg-background text-foreground;
+    /* Force mobile layout on mobile devices */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    touch-action: manipulation;
   }
+
+  /* Ensure mobile-first responsive behavior */
+  @media (max-width: 768px) {
+    html {
+      font-size: 16px; /* Prevent zoom on form inputs */
+    }
+    
+    body {
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+}
+
+@keyframes storyProgress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.story-progress-bar {
+  animation: storyProgress 6s linear forwards;
+  animation-play-state: running;
+}
+
+.story-progress-bar.paused {
+  animation-play-state: paused;
 }
