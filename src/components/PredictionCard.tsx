@@ -9,6 +9,16 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import PredictionModal from './PredictionModal';
 import ProtectedComponent from './ProtectedComponent';
 import { useState, useRef, useEffect } from 'react';
@@ -18,10 +28,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { useOptimizedPosts } from '@/hooks/useOptimizedPosts';
 import { usePostActions } from '@/hooks/usePostActions';
 import { usePostViews } from '@/hooks/usePostViews';
+import { useFollows } from '@/hooks/useFollows';
 import { supabase } from '@/integrations/supabase/client';
 import { usePostLikes } from '@/hooks/usePostLikes';
 import { usePostComments } from '@/hooks/usePostComments';
 import { CommentsBottomSheet } from '@/components/CommentsBottomSheet';
+import EditPostModal from '@/components/EditPostModal';
+import { usePosts } from '@/hooks/usePosts';
 
 interface PredictionCardProps {
   prediction: {
@@ -47,6 +60,8 @@ interface PredictionCardProps {
     image?: string;
     video?: string;
     totalOdds?: string;
+    reservationCode?: string;
+    betType?: string;
     matches?: Array<{
       id: string;
       teams: string;
@@ -54,6 +69,7 @@ interface PredictionCardProps {
       odds: string;
       league: string;
       time: string;
+      betType?: string;
     }>;
     is_liked?: boolean;
   };
@@ -64,25 +80,27 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
   const navigate = useNavigate();
   const { requireAuth, user } = useAuth();
   const { likePost } = useOptimizedPosts();
+  const { updatePost } = usePosts();
   const { isLiked: isPostLiked, likesCount: postLikesCount, toggleLike } = usePostLikes(prediction.id);
   const { commentsCount } = usePostComments(prediction.id);
   const { addView } = usePostViews();
   const { 
-    followUser, 
     savePost, 
     sharePost, 
     reportPost, 
     hidePost, 
     blockUser,
-    checkIfUserFollowed,
     checkIfPostSaved,
     checkIfUserBlocked,
     loading: actionsLoading
   } = usePostActions();
   
+  // Use real follows functionality
+  const { isFollowing, loading: followLoading, followUser, unfollowUser } = useFollows(prediction.user_id);
+  
   // Check if current user is the post owner
   const isPostOwner = user && prediction.user_id && user.id === prediction.user_id;
-  const isCurrentUser = user && prediction.user.username === user.email?.split('@')[0];
+  const isCurrentUser = isPostOwner;
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -94,10 +112,11 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [isFollowed, setIsFollowed] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [actionStatesLoaded, setActionStatesLoaded] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hideControlsTimeout = useRef<NodeJS.Timeout>();
 
@@ -106,18 +125,16 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
       if (user && !actionStatesLoaded) {
         console.log('Loading action states for user:', user.id, 'post:', prediction.id);
         try {
-          const [followed, saved, blocked] = await Promise.all([
-            checkIfUserFollowed(prediction.user.username),
+          const [saved, blocked] = await Promise.all([
             checkIfPostSaved(prediction.id),
             checkIfUserBlocked(prediction.user.username)
           ]);
           
-          setIsFollowed(followed);
           setIsSaved(saved);
           setIsBlocked(blocked);
           setActionStatesLoaded(true);
           
-          console.log('Action states loaded:', { followed, saved, blocked });
+          console.log('Action states loaded:', { saved, blocked });
         } catch (error) {
           console.error('Error loading action states:', error);
         }
@@ -125,7 +142,7 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
     };
 
     loadActionStates();
-  }, [user, prediction.id, prediction.user.username, checkIfUserFollowed, checkIfPostSaved, checkIfUserBlocked, actionStatesLoaded]);
+  }, [user, prediction.id, prediction.user.username, checkIfPostSaved, checkIfUserBlocked, actionStatesLoaded]);
 
   const handleProfileClick = async () => {
     if (!requireAuth()) return;
@@ -159,7 +176,12 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
   };
 
   const handleEditPost = () => {
-    toast.info('Modification du post - Fonctionnalité en développement');
+    setShowEditModal(true);
+  };
+
+  const handleSavePost = async (postId: string, imageFile?: File, videoFile?: File) => {
+    await updatePost(postId, imageFile, videoFile);
+    setShowEditModal(false);
   };
 
   const handleDeletePost = async () => {
@@ -200,10 +222,11 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
             toast.error('Vous ne pouvez pas vous suivre vous-même');
             return;
           }
-          await followUser(prediction.user.username);
-          // Recharger l'état après l'action
-          const newFollowState = await checkIfUserFollowed(prediction.user.username);
-          setIsFollowed(newFollowState);
+          if (isFollowing) {
+            await unfollowUser();
+          } else {
+            await followUser();
+          }
           break;
         case 'save':
           await savePost(prediction.id);
@@ -228,9 +251,7 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
           handleEditPost();
           break;
         case 'delete':
-          if (window.confirm('Êtes-vous sûr de vouloir supprimer ce post ?')) {
-            handleDeletePost();
-          }
+          setShowDeleteDialog(true);
           break;
         default:
           console.log(`Action: ${action} on prediction ${prediction.id}`);
@@ -460,7 +481,7 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
                           className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors flex items-center space-x-3 disabled:opacity-50"
                         >
                           <span className="text-2xl">👤</span>
-                          <span>{isFollowed ? 'Ne plus suivre' : 'Suivre'} cet utilisateur</span>
+                          <span>{isFollowing ? 'Ne plus suivre' : 'Suivre'} cet utilisateur</span>
                         </button>
                       )}
                       <button 
@@ -515,7 +536,18 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
 
         {/* Match Info */}
         <div className="mb-3">
-          <div className="font-semibold text-lg text-gray-900 mb-2">{prediction.match}</div>
+          <div className="font-semibold text-lg text-gray-900 mb-2">
+            {prediction.match.length > 45 ? (
+              <>
+                {prediction.match.substring(0, 45)}...{" "}
+                <span className="text-green-600 font-medium cursor-pointer hover:underline">
+                  voir plus
+                </span>
+              </>
+            ) : (
+              prediction.match
+            )}
+          </div>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
               <span className="text-gray-600">Cote: {prediction.odds}</span>
@@ -536,9 +568,9 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
                   size="sm" 
                   className="h-7 px-2 text-xs"
                   onClick={() => handleMenuAction('follow')}
-                  disabled={actionsLoading}
+                  disabled={actionsLoading || followLoading}
                 >
-                  {isFollowed ? 'Suivi' : 'Suivre'}
+                  {isFollowing ? 'Suivi' : 'Suivre'}
                 </Button>
               )}
             </ProtectedComponent>
@@ -657,7 +689,18 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
 
         {/* Analysis */}
         <div className="mb-4">
-          <p className="text-gray-700 text-sm leading-relaxed">{prediction.analysis}</p>
+          <p className="text-gray-700 text-sm leading-relaxed">
+            {prediction.analysis.length > 45 ? (
+              <>
+                {prediction.analysis.substring(0, 45)}...{" "}
+                <span className="text-green-600 font-medium cursor-pointer hover:underline">
+                  voir plus
+                </span>
+              </>
+            ) : (
+              prediction.analysis
+            )}
+          </p>
         </div>
 
         {/* Actions */}
@@ -745,6 +788,38 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
         </div>
       </CardContent>
       
+      {/* Dialog de confirmation de suppression */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer ce post ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Votre post sera définitivement supprimé et ne pourra pas être récupéré.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeletePost}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal d'édition */}
+      <EditPostModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        post={{
+          id: prediction.id,
+          image_url: prediction.image,
+          video_url: prediction.video
+        }}
+        onSave={handleSavePost}
+      />
     </Card>
   );
 };
