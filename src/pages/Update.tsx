@@ -31,7 +31,7 @@ const Update = () => {
   console.log('User metadata:', user?.user_metadata);
   console.log('Display name:', user?.user_metadata?.display_name);
   
-  const isSmartUser = user?.email === 'smart@example.com' || user?.user_metadata?.display_name === 'Smart';
+  const isSmartUser = user?.email === 'smart@example.com' || user?.email?.includes('padmin') || user?.user_metadata?.display_name === 'Smart';
   console.log('Is Smart user:', isSmartUser);
 
   if (!isSmartUser) {
