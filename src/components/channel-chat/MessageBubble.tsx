@@ -134,7 +134,14 @@ const MessageBubble = ({ message, isCreator, creatorId, onEdit, onDelete, onRepl
               {formatTime(message.created_at)}
             </span>
           )}
-          <span className="font-medium text-sm text-gray-700">
+          <span 
+            className="font-medium text-sm text-gray-700 cursor-pointer hover:underline"
+            onClick={() => {
+              if (message.user_id) {
+                window.location.href = `/profile?userId=${message.user_id}`;
+              }
+            }}
+          >
             {message.username}
           </span>
           {isFromCreator && (
