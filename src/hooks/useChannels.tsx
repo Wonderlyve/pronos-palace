@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useCache } from './useCache';
 import { toast } from 'sonner';
 
 export interface Channel {
@@ -37,8 +38,19 @@ export const useChannels = () => {
   const [loading, setLoading] = useState(false);
   const [userSubscriptions, setUserSubscriptions] = useState<string[]>([]);
   const { user } = useAuth();
+  const { cachedData, isFromCache, setCacheData } = useCache<Channel[]>({
+    key: 'channels_list',
+    ttl: 10 * 60 * 1000 // 10 minutes cache
+  });
 
-  const fetchChannels = async () => {
+  const fetchChannels = async (useCache = true) => {
+    // Si on a des données en cache et qu'on veut les utiliser
+    if (useCache && cachedData && cachedData.length > 0) {
+      setChannels(cachedData);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       // Fetch channels
@@ -85,6 +97,8 @@ export const useChannels = () => {
       );
 
       setChannels(channelsWithMetadata);
+      // Mettre en cache les données
+      setCacheData(channelsWithMetadata);
     } catch (error) {
       console.error('Error fetching channels:', error);
       toast.error('Erreur lors du chargement des canaux');
@@ -125,7 +139,7 @@ export const useChannels = () => {
       if (error) throw error;
 
       toast.success('Canal créé avec succès');
-      await fetchChannels(); // Refresh the list
+      await fetchChannels(false); // Force refresh without cache
       return data;
     } catch (error) {
       console.error('Error creating channel:', error);
@@ -241,7 +255,7 @@ export const useChannels = () => {
 
   return {
     channels,
-    loading,
+    loading: loading && !isFromCache,
     userSubscriptions,
     createChannel,
     subscribeToChannel,
@@ -250,6 +264,6 @@ export const useChannels = () => {
     getChannelByShareCode,
     shareChannel,
     generateShareLink,
-    refetch: fetchChannels
+    refetch: () => fetchChannels(false)
   };
 };

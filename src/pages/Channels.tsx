@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Plus, Lock, Users, MessageCircle, Crown, ArrowLeft, Search, X, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import BottomNavigation from '@/components/BottomNavigation';
 import ChannelChat from '@/components/ChannelChat';
+import ChannelSkeleton from '@/components/ChannelSkeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useChannels, Channel } from '@/hooks/useChannels';
 import { useChannelNotifications } from '@/hooks/useChannelNotifications';
@@ -48,7 +48,6 @@ const Channels = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
-
   // Check user badge from profiles table
   const [userProfile, setUserProfile] = useState<any>(null);
   useEffect(() => {
@@ -128,7 +127,6 @@ const Channels = () => {
     }
   };
 
-
   if (selectedChannel) {
     return (
       <ChannelChat
@@ -136,32 +134,6 @@ const Channels = () => {
         channelName={selectedChannel.name}
         onBack={() => setSelectedChannel(null)}
       />
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 pb-20">
-        <div className="bg-gradient-to-r from-green-500 to-green-600 p-4">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/')}
-              className="text-white hover:bg-white/20"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-2xl font-bold text-white">Canaux VIP</h1>
-          </div>
-        </div>
-        <div className="p-4">
-          <div className="text-center py-8">
-            <p className="text-gray-500">Chargement des canaux...</p>
-          </div>
-        </div>
-        <BottomNavigation />
-      </div>
     );
   }
 
@@ -340,13 +312,15 @@ const Channels = () => {
         </AlertDialog>
 
         {/* Channels List */}
-        {channels.length > 0 ? (
+        {loading ? (
+          <ChannelSkeleton />
+        ) : channels.length > 0 ? (
           <div className="bg-white rounded-lg border shadow-sm">
             {channels
               .filter(channel => 
                 channel.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 channel.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                channel.creator_username.toLowerCase().includes(searchQuery.toLowerCase())
+                channel.creator_username?.toLowerCase().includes(searchQuery.toLowerCase())
               )
               .map((channel, index) => (
               <div key={channel.id}>
