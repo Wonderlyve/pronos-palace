@@ -22,10 +22,11 @@ interface ChatHeaderProps {
   onBack: () => void;
   onCreateVipProno?: () => void;
   onCreateDebriefing?: () => void;
+  onDeleteChannel?: () => void;
   className?: string;
 }
 
-const ChatHeader = ({ channelName, channelInfo, onBack, onCreateVipProno, onCreateDebriefing, className }: ChatHeaderProps) => {
+const ChatHeader = ({ channelName, channelInfo, onBack, onCreateVipProno, onCreateDebriefing, onDeleteChannel, className }: ChatHeaderProps) => {
   const { user } = useAuth();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 

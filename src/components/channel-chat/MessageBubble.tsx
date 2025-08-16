@@ -228,11 +228,13 @@ const MessageBubble = ({ message, isCreator, creatorId, onEdit, onDelete, onRepl
                     {message.media_url && (
                       <div className={message.content ? "mt-2" : ""}>
                         {message.media_type === 'image' && (
-                          <img 
-                            src={message.media_url} 
-                            alt={message.media_filename || 'Image'} 
-                            className="max-w-full h-auto rounded-lg"
-                          />
+                          <div className="w-full h-48 rounded-lg overflow-hidden">
+                            <img 
+                              src={message.media_url} 
+                              alt={message.media_filename || 'Image'} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                         )}
                         {message.media_type === 'video' && (
                           <video 
