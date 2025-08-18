@@ -164,13 +164,17 @@ const CreatePredictionModal = ({ open, onOpenChange }: CreatePredictionModalProp
         };
       } else if (betType === 'loto') {
         postData = {
+          content: `Numéros: ${lotoNumbers.join(', ')} - ${analysis}`,
           analysis,
           confidence,
           odds: 0,
           sport: 'Loto',
+          match_teams: 'Loto',
           prediction_text: `Numéros: ${lotoNumbers.join(', ')}`,
           reservation_code: reservationCode || null,
+          bet_type: 'loto',
           post_type: 'prediction',
+          matches_data: JSON.stringify({ lotoNumbers }),
           image_file: selectedImage,
           video_file: selectedVideo
         };
