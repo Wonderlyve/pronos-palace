@@ -206,6 +206,8 @@ const CreatePredictionModal = ({ open, onOpenChange }: CreatePredictionModalProp
         };
       }
 
+      console.log('Données du post à créer:', postData);
+
       const result = await createPost(postData);
       
       setShowLoadingModal(false);
