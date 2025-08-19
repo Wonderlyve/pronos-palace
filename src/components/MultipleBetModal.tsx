@@ -99,55 +99,59 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
               </div>
             </div>
 
-            {/* Tableau des matchs optimisé mobile */}
+            {/* Tableau des matchs - Format identique au modal de création */}
             <div className="space-y-3">
               <h4 className="font-medium text-sm text-muted-foreground">
                 {betTypeLabel} ({matches.length} match{matches.length > 1 ? 's' : ''})
               </h4>
               
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
                 {/* Header du tableau */}
-                <div className="bg-muted/30 px-3 py-2 border-b">
-                  <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground">
+                <div className="bg-gray-50 px-3 py-2 border-b">
+                  <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-700">
                     <div className="col-span-4">Équipes</div>
-                    <div className="col-span-5">Pronostic</div>
-                    <div className="col-span-3 text-center">Côte</div>
+                    <div className="col-span-4">Pronostic</div>
+                    <div className="col-span-2 text-center">Côte</div>
+                    <div className="col-span-2"></div>
                   </div>
                 </div>
                 
                 {/* Corps du tableau */}
-                <div className="divide-y divide-border">
+                <div className="divide-y">
                   {matches.map((match, index) => (
                     <div key={match.id} className="px-3 py-3">
                       <div className="grid grid-cols-12 gap-2 items-center">
                         {/* Équipes */}
                         <div className="col-span-4">
-                          <div className="text-sm font-medium text-foreground leading-tight">
+                          <div className="text-sm font-medium text-gray-900 leading-tight">
                             {match.teams}
                           </div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
+                          <div className="text-xs text-gray-500 mt-0.5">
                             {match.league} • {match.time}
                           </div>
                         </div>
                         
                         {/* Pronostic */}
-                        <div className="col-span-5">
+                        <div className="col-span-4">
                           <span className="inline-block px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full mb-1">
                             {match.betType || '1X2'}
                           </span>
-                          <div className="text-sm font-medium text-foreground">
+                          <div className="text-xs font-medium text-gray-900">
                             {match.prediction}
                           </div>
                         </div>
                         
                         {/* Côte */}
-                        <div className="col-span-3 text-center">
+                        <div className="col-span-2 text-center">
                           {prediction.betType !== 'loto' && prediction.sport !== 'Loto' && (
                             <div className="text-sm font-bold text-green-600">
                               {match.odds}
                             </div>
                           )}
                         </div>
+                        
+                        {/* Colonne vide pour l'alignement */}
+                        <div className="col-span-2"></div>
                       </div>
                     </div>
                   ))}
