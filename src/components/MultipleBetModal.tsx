@@ -113,12 +113,12 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
                 </div>
                 
                 {/* Corps du tableau */}
-                <div className="divide-y">
+                <div className="divide-y divide-border">
                   {matches.map((match, index) => (
-                    <div key={match.id} className="px-3 py-3">
-                      <div className="grid grid-cols-12 gap-2 items-center">
+                    <div key={match.id} className="px-3 py-3 border-b border-border last:border-b-0">
+                      <div className="grid grid-cols-12 gap-2 items-center min-h-[3rem]">
                         {/* Équipes */}
-                        <div className="col-span-5">
+                        <div className="col-span-5 flex flex-col justify-center">
                           <div className="text-sm font-medium text-foreground leading-tight">
                             {match.teams}
                           </div>
@@ -128,8 +128,8 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
                         </div>
                         
                         {/* Pronostic */}
-                        <div className="col-span-4">
-                          <Badge variant="secondary" className="text-xs mb-1">
+                        <div className="col-span-4 flex flex-col justify-center">
+                          <Badge variant="secondary" className="text-xs mb-1 w-fit">
                             {match.betType || '1X2'}
                           </Badge>
                           <div className="text-sm font-medium text-foreground">
@@ -138,7 +138,7 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
                         </div>
                         
                         {/* Côte */}
-                        <div className="col-span-3 text-center">
+                        <div className="col-span-3 text-center flex items-center justify-center h-full">
                           {prediction.betType !== 'loto' && prediction.sport !== 'Loto' && (
                             <div className="text-sm font-bold text-green-600">
                               {match.odds}
