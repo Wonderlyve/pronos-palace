@@ -96,59 +96,47 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
               </div>
             </div>
 
-            {/* Tableau des matchs optimisé mobile */}
+            {/* Liste des matchs sélectionnés */}
             <div className="space-y-3">
               <h4 className="font-medium text-sm text-muted-foreground">
-                {betTypeLabel} ({matches.length} match{matches.length > 1 ? 's' : ''})
+                Matchs sélectionnés ({matches.length}):
               </h4>
               
-              <div className="border rounded-lg overflow-hidden">
-                {/* Header du tableau */}
-                <div className="bg-muted/30 px-3 py-2 border-b">
-                  <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground">
-                    <div className="col-span-5">Équipes</div>
-                    <div className="col-span-4">Pronostic</div>
-                    <div className="col-span-3 text-center">Côte</div>
-                  </div>
-                </div>
-                
-                {/* Corps du tableau */}
-                <div className="divide-y divide-border">
-                  {matches.map((match, index) => (
-                    <div key={match.id} className="px-3 py-3 border-b border-border last:border-b-0">
-                      <div className="grid grid-cols-12 gap-2 items-center min-h-[3rem]">
-                        {/* Équipes */}
-                        <div className="col-span-5 flex flex-col justify-center">
-                          <div className="text-sm font-medium text-foreground leading-tight">
-                            {match.teams}
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {match.league} • {match.time}
-                          </div>
+              <div className="space-y-2">
+                {matches.map((match, index) => (
+                  <div key={match.id} className="bg-muted/20 border border-border rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      {/* Équipes */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">
+                          {match.teams}
                         </div>
-                        
-                        {/* Pronostic */}
-                        <div className="col-span-4 flex flex-col justify-center">
-                          <Badge variant="secondary" className="text-xs mb-1 w-fit">
-                            {match.betType || '1X2'}
-                          </Badge>
-                          <div className="text-sm font-medium text-foreground">
-                            {match.prediction}
-                          </div>
-                        </div>
-                        
-                        {/* Côte */}
-                        <div className="col-span-3 text-center flex items-center justify-center h-full">
-                          {prediction.betType !== 'loto' && prediction.sport !== 'Loto' && (
-                            <div className="text-sm font-bold text-green-600">
-                              {match.odds}
-                            </div>
-                          )}
+                        <div className="text-xs text-muted-foreground">
+                          {match.league} • {match.time}
                         </div>
                       </div>
+                      
+                      {/* Pronostic */}
+                      <div className="flex-1 text-center px-2">
+                        <div className="text-xs text-muted-foreground mb-1">
+                          {match.betType || '1X2'}
+                        </div>
+                        <div className="text-sm font-medium text-foreground">
+                          {match.prediction}
+                        </div>
+                      </div>
+                      
+                      {/* Côte */}
+                      <div className="w-16 text-right">
+                        {prediction.betType !== 'loto' && prediction.sport !== 'Loto' && (
+                          <div className="text-lg font-bold text-green-600">
+                            {match.odds}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
 
