@@ -5,7 +5,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Match {
   id: string;
-  teams: string;
+  teams?: string;
+  team1?: string;
+  team2?: string;
   prediction: string;
   odds: string;
   league: string;
@@ -39,11 +41,12 @@ interface MultipleBetModalProps {
 }
 
 const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalProps) => {
-  // Préparer les matchs pour l'affichage
+  // Préparer les matchs pour l'affichage selon le format du modal de création
   const matches = prediction.matches ? 
     prediction.matches.map((match, index) => ({
       ...match,
       id: match.id || `match-${index}`,
+      teams: match.teams || `${match.team1 || ''} vs ${match.team2 || ''}`,
       betType: match.betType || prediction.betType
     })) :
     [{
