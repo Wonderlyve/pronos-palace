@@ -5,9 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Match {
   id: string;
-  teams?: string;
-  team1?: string;
-  team2?: string;
+  teams: string;
   prediction: string;
   odds: string;
   league: string;
@@ -37,27 +35,98 @@ interface MultipleBetModalProps {
     reservationCode?: string;
     betType?: string;
     matches?: Match[];
+    matches_data?: string;
   };
 }
 
 const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalProps) => {
-  // Préparer les matchs pour l'affichage selon le format du modal de création
-  const matches = prediction.matches ? 
-    prediction.matches.map((match, index) => ({
-      ...match,
-      id: match.id || `match-${index}`,
-      teams: match.teams || `${match.team1 || ''} vs ${match.team2 || ''}`,
-      betType: match.betType || prediction.betType
-    })) :
-    [{
-      id: "1",
-      teams: prediction.match,
-      prediction: prediction.prediction,
-      odds: prediction.odds,
+  // Fonction pour normaliser un match individuel
+  const normalizeMatch = (match: any, index: number, fallbackData: any) => ({
+    id: match.id || `match-${index}`,
+    teams: match.homeTeam && match.awayTeam 
+      ? `${match.homeTeam} vs ${match.awayTeam}` 
+      : match.teams || match.match || fallbackData.match,
+    prediction: match.pronostic || match.prediction || fallbackData.prediction,
+    odds: match.odd || match.odds || fallbackData.odds,
+    league: match.sport || match.league || fallbackData.sport,
+    time: match.time || match.heure || '20:00',
+    betType: match.betType || match.typeProno || fallbackData.betType
+  });
+
+  // Fonction pour diviser les matchs multiples séparés par "|"
+  const splitMultipleMatches = (matchString: string, predictionString: string, oddsString: string) => {
+    const matchParts = matchString.split('|').map(m => m.trim());
+    const predictionParts = predictionString.split('|').map(p => p.trim());
+    const oddsParts = oddsString.split('|').map(o => o.trim());
+    
+    return matchParts.map((match, index) => ({
+      id: `split-${index}`,
+      teams: match,
+      prediction: predictionParts[index] || predictionParts[0] || predictionString,
+      odds: oddsParts[index] || oddsParts[0] || oddsString,
       league: prediction.sport,
       time: '20:00',
       betType: prediction.betType
-    }];
+    }));
+  };
+
+  // Préparer les matchs pour l'affichage
+  let matches: Match[] = [];
+  
+  // 1. Essayer de parser matches_data d'abord
+  if (prediction.matches_data) {
+    try {
+      const matchesData = JSON.parse(prediction.matches_data);
+      
+      if (Array.isArray(matchesData)) {
+        // Si c'est un tableau de matchs
+        matches = matchesData.map((match, index) => normalizeMatch(match, index, prediction));
+      } else if (matchesData.lotoNumbers) {
+        // Cas spécial pour le loto
+        matches = [{
+          id: "loto-1",
+          teams: 'Loto',
+          prediction: `Numéros: ${matchesData.lotoNumbers.join(', ')}`,
+          odds: '',
+          league: 'Loto',
+          time: ''
+        }];
+      } else if (matchesData.homeTeam || matchesData.teams) {
+        // Si c'est un seul objet match
+        matches = [normalizeMatch(matchesData, 0, prediction)];
+      }
+    } catch (error) {
+      console.error('Erreur parsing matches_data:', error);
+    }
+  }
+  
+  // 2. Si pas de matches_data valide, utiliser le tableau matches
+  if (matches.length === 0 && prediction.matches && prediction.matches.length > 0) {
+    matches = prediction.matches.map((match, index) => normalizeMatch(match, index, prediction));
+  }
+  
+  // 3. Si toujours pas de matchs, vérifier si le match principal contient plusieurs matchs séparés par "|"
+  if (matches.length === 0) {
+    if (prediction.match && prediction.match.includes('|')) {
+      // Diviser les matchs multiples
+      matches = splitMultipleMatches(
+        prediction.match, 
+        prediction.prediction || '', 
+        prediction.odds || ''
+      );
+    } else {
+      // Créer un match par défaut
+      matches = [{
+        id: "default-1",
+        teams: prediction.match,
+        prediction: prediction.prediction,
+        odds: prediction.odds,
+        league: prediction.sport,
+        time: '20:00',
+        betType: prediction.betType
+      }];
+    }
+  }
 
   const isMultipleBet = prediction.betType === 'combine' || prediction.betType === 'multiple' || matches.length > 1;
   const betTypeLabel = prediction.betType === 'combine' ? 'Pari Combiné' : 'Paris Multiples';
@@ -99,64 +168,29 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
               </div>
             </div>
 
-            {/* Tableau des matchs - Format identique au modal de création */}
+            {/* Matchs sélectionnés - Chaque match dans son propre bloc */}
             <div className="space-y-3">
               <h4 className="font-medium text-sm text-muted-foreground">
-                {betTypeLabel} ({matches.length} match{matches.length > 1 ? 's' : ''})
+                Matchs sélectionnés ({matches.length} match{matches.length > 1 ? 's' : ''})
               </h4>
               
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
-                {/* Header du tableau */}
-                <div className="bg-gray-50 px-3 py-2 border-b">
-                  <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-700">
-                    <div className="col-span-4">Équipes</div>
-                    <div className="col-span-4">Pronostic</div>
-                    <div className="col-span-2 text-center">Côte</div>
-                    <div className="col-span-2"></div>
+              {matches.map((match, index) => (
+                <div key={match.id || index} className="p-3 mb-2 border rounded-xl shadow-sm bg-background">
+                  <div className="flex justify-between items-center">
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm mb-1">{match.teams}</p>
+                      <p className="text-muted-foreground text-xs">
+                        ⚽ {match.league} • ⏰ {match.time}
+                      </p>
+                    </div>
+                    <div className="text-right ml-3">
+                      <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">
+                        {match.prediction}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                
-                {/* Corps du tableau */}
-                <div className="divide-y">
-                  {matches.map((match, index) => (
-                    <div key={match.id} className="px-3 py-3">
-                      <div className="grid grid-cols-12 gap-2 items-center">
-                        {/* Équipes */}
-                        <div className="col-span-4">
-                          <div className="text-sm font-medium text-gray-900 leading-tight">
-                            {match.teams}
-                          </div>
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            {match.league} • {match.time}
-                          </div>
-                        </div>
-                        
-                        {/* Pronostic */}
-                        <div className="col-span-4">
-                          <span className="inline-block px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full mb-1">
-                            {match.betType || '1X2'}
-                          </span>
-                          <div className="text-xs font-medium text-gray-900">
-                            {match.prediction}
-                          </div>
-                        </div>
-                        
-                        {/* Côte */}
-                        <div className="col-span-2 text-center">
-                          {prediction.betType !== 'loto' && prediction.sport !== 'Loto' && (
-                            <div className="text-sm font-bold text-green-600">
-                              {match.odds}
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Colonne vide pour l'alignement */}
-                        <div className="col-span-2"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
 
             {/* Côte totale pour pari combiné */}
