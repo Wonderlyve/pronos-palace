@@ -51,7 +51,7 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
     odds: match.odd || match.odds || fallbackData.odds,
     league: match.sport || match.league || fallbackData.sport,
     time: match.time || match.heure || '20:00',
-    betType: match.betType || match.typeProno || fallbackData.betType
+    betType: match.typeProno || match.betType || match.typePari || '1x2'
   });
 
   // Fonction pour diviser les matchs multiples séparés par "|"
@@ -144,8 +144,8 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
           </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 max-h-[70vh]">
-          <div className="space-y-4">
+        <ScrollArea className="flex-1 overflow-y-auto">
+          <div className="space-y-4 pr-4">
             {/* Bannière publicitaire */}
             <div className="relative">
               <img 
