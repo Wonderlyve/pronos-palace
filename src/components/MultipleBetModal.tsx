@@ -51,8 +51,10 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
     odds: match.odd || match.odds || fallbackData.odds,
     league: match.sport || match.league || fallbackData.sport,
     time: match.time || match.heure || '20:00',
-    // ⚡ On garde uniquement le vrai type du match si fourni
-    betType: match.betType || match.typeProno || undefined,
+    // Récupération du type de pari spécifique choisi par l'utilisateur
+    betType: match.betType || match.typeProno || match.type_pari || match.typePari || 
+             match.bet_type || match.pariType || match.typeOfBet || match.marketType ||
+             fallbackData.betType || 'Paris Simple',
   });
 
   // Division de matchs multiples séparés par "|"
@@ -68,7 +70,7 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
       odds: oddsParts[index] || oddsParts[0] || oddsString,
       league: prediction.sport,
       time: '20:00',
-      betType: undefined, // pas de type spécifique si non fourni
+      betType: prediction.betType || 'Paris Simple', // utilisation du type de pari global
     }));
   };
 
@@ -120,7 +122,7 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
           odds: prediction.odds,
           league: prediction.sport,
           time: '20:00',
-          betType: undefined,
+          betType: prediction.betType || 'Paris Simple',
         },
       ];
     }
@@ -187,7 +189,7 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
                     <p className="text-xs text-muted-foreground mt-1">
                       🎯 Type :{' '}
                       <span className="font-medium">
-                        {match.betType ? match.betType : '—'}
+                        {match.betType}
                       </span>
                     </p>
                   </div>
