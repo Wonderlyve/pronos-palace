@@ -11,6 +11,7 @@ interface Match {
   league: string;
   time: string;
   betType?: string;
+  typeProno?: string;
 }
 
 interface MultipleBetModalProps {
@@ -189,7 +190,7 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
                         <td className="p-2 font-medium">{match.teams}</td>
                         <td className="p-2">
                           <span className="text-xs text-muted-foreground">
-                            {match.betType || 'Standard'}
+                            {match.betType || match.typeProno || 'Standard'}
                           </span>
                         </td>
                         <td className="p-2">
