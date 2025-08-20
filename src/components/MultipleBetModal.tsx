@@ -133,7 +133,7 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md mx-auto max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-md mx-auto max-h-[90vh] flex flex-col bg-background">
         <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="flex items-center justify-between">
             <span className="text-lg font-semibold">Détails du {betTypeLabel}</span>
@@ -143,7 +143,7 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
           </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 max-h-[70vh]">
           <div className="space-y-4">
             {/* Bannière publicitaire */}
             <div className="relative">
@@ -168,29 +168,43 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
               </div>
             </div>
 
-            {/* Matchs sélectionnés - Chaque match dans son propre bloc */}
-            <div className="space-y-3">
-              <h4 className="font-medium text-sm text-muted-foreground">
+            {/* Tableau des matchs */}
+            <div className="p-4 bg-background rounded-lg shadow-sm border">
+              <h4 className="font-medium text-sm text-muted-foreground mb-4">
                 Matchs sélectionnés ({matches.length} match{matches.length > 1 ? 's' : ''})
               </h4>
               
-              {matches.map((match, index) => (
-                <div key={match.id || index} className="p-3 mb-2 border rounded-xl shadow-sm bg-background">
-                  <div className="flex justify-between items-center">
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm mb-1">{match.teams}</p>
-                      <p className="text-muted-foreground text-xs">
-                        ⚽ {match.league} • ⏰ {match.time}
-                      </p>
-                    </div>
-                    <div className="text-right ml-3">
-                      <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">
-                        {match.prediction}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left border-collapse">
+                  <thead>
+                    <tr className="bg-muted/50 text-muted-foreground">
+                      <th className="p-2 font-medium">Équipes</th>
+                      <th className="p-2 font-medium">Pronostic</th>
+                      <th className="p-2 font-medium">Côte</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {matches.map((match, index) => (
+                      <tr key={match.id || index} className="border-b border-muted/30 hover:bg-muted/20">
+                        <td className="p-2 font-medium">{match.teams}</td>
+                        <td className="p-2">
+                          <div className="flex flex-col gap-1">
+                            <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium inline-block w-fit">
+                              {match.prediction}
+                            </span>
+                            {match.betType && (
+                              <span className="text-xs text-muted-foreground">
+                                {match.betType}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-2 font-semibold text-green-600">{match.odds}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {/* Côte totale pour pari combiné */}
