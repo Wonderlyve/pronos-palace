@@ -179,8 +179,8 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
                   <thead>
                     <tr className="bg-muted/50 text-muted-foreground">
                       <th className="p-2 font-medium">Équipes</th>
+                      <th className="p-2 font-medium">Type</th>
                       <th className="p-2 font-medium">Pronostic</th>
-                      <th className="p-2 font-medium">Côte</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -188,18 +188,15 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
                       <tr key={match.id || index} className="border-b border-muted/30 hover:bg-muted/20">
                         <td className="p-2 font-medium">{match.teams}</td>
                         <td className="p-2">
-                          <div className="flex flex-col gap-1">
-                            <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium inline-block w-fit">
-                              {match.prediction}
-                            </span>
-                            {match.betType && (
-                              <span className="text-xs text-muted-foreground">
-                                {match.betType}
-                              </span>
-                            )}
-                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {match.betType || 'Standard'}
+                          </span>
                         </td>
-                        <td className="p-2 font-semibold text-green-600">{match.odds}</td>
+                        <td className="p-2">
+                          <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium inline-block w-fit">
+                            {match.prediction}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
