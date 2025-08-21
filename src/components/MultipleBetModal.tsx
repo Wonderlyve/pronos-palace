@@ -34,6 +34,7 @@ interface MultipleBetModalProps {
     totalOdds?: string;
     reservationCode?: string;
     betType?: string; // simple, combine, multiple
+    selectedBetType?: string; // Type de pari choisi par l'utilisateur
     matches?: Match[];
     matches_data?: string;
   };
@@ -53,10 +54,12 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
     odds: match.odd || match.odds || fallbackData.odds,
     league: match.sport || match.league || fallbackData.sport,
     time: match.time || match.heure || '20:00',
-    // Récupération du type de pari spécifique choisi par l'utilisateur pour ce match
-    betType: match.betType || match.typeProno || match.type_pari || match.typePari || 
-             match.bet_type || match.pariType || match.typeOfBet || match.marketType || 
-             match.customBet || '1X2',
+    // Récupération prioritaire du type de pari choisi par l'utilisateur
+    betType: match.selectedBetType || match.betType || match.typeProno || match.type_pari || 
+             match.typePari || match.bet_type || match.pariType || match.typeOfBet || 
+             match.marketType || match.customBet || match.betOption || match.option || 
+             // Ne pas utiliser de fallback automatique vers 1X2, préserver le type réel
+             null,
   });
 
   // Division de matchs multiples séparés par "|"
@@ -72,7 +75,8 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
       odds: oddsParts[index] || oddsParts[0] || oddsString,
       league: prediction.sport,
       time: '20:00',
-      betType: '1X2', // Type par défaut pour les matchs séparés par |
+      // Garder le type null si pas spécifié pour les matchs séparés
+      betType: null,
     }));
   };
 
@@ -125,7 +129,8 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
           odds: prediction.odds,
           league: prediction.sport,
           time: '20:00',
-          betType: '1X2',
+          // Utiliser le type de pari principal s'il existe
+          betType: prediction.betType === 'simple' ? prediction.selectedBetType || null : null,
         },
       ];
     }
@@ -193,7 +198,7 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
                       <p className="text-xs text-muted-foreground mt-1">
                         🎯 Type :{' '}
                         <span className="font-medium">
-                          {match.betType}
+                          {match.betType || 'Standard'}
                         </span>
                       </p>
                     </div>
