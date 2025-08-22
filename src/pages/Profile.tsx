@@ -342,6 +342,21 @@ const Profile = () => {
           </div>
         </div>
         
+        {isOwnProfile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              setNewDisplayName(profile.display_name);
+              setNewBio(profile.bio);
+              setShowEditModal(true);
+            }}
+            className="absolute top-4 right-16 text-white hover:bg-white/20"
+          >
+            <Edit className="w-5 h-5" />
+          </Button>
+        )}
+        
         <Button
           variant="ghost"
           size="icon"
