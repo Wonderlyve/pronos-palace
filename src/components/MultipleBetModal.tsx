@@ -1,5 +1,4 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -153,8 +152,8 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
         </DialogHeader>
 
         {/* Zone scrollable améliorée */}
-        <ScrollArea className="flex-1 px-4">
-          <div className="space-y-4 pb-4">
+        <div className="flex-1 overflow-y-auto px-4 pr-2">
+          <div className="space-y-4 pb-4 pr-2">
             {/* Bannière publicitaire */}
             <div className="relative">
               <img
@@ -272,7 +271,7 @@ const MultipleBetModal = ({ open, onOpenChange, prediction }: MultipleBetModalPr
               </div>
             </div>
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
