@@ -803,7 +803,7 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
             <ProtectedComponent fallback={
               <button className="flex items-center space-x-1 text-gray-400 cursor-not-allowed">
                 <MessageCircle className="w-4 h-4" />
-                <span className="text-xs font-medium">0</span>
+                <span className="text-xs font-medium">{commentsCount}</span>
               </button>
             }>
               <CommentsBottomSheet postId={prediction.id.toString()} commentsCount={commentsCount}>
