@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useFollows } from '@/hooks/useFollows';
 import FollowsList from '@/components/FollowsList';
 import FollowersListView from '@/components/FollowersListView';
+import ImageViewer from '@/components/ImageViewer';
 
 interface UserPost {
   id: string;
@@ -53,6 +54,8 @@ const Profile = () => {
   const [newDisplayName, setNewDisplayName] = useState('');
   const [newBio, setNewBio] = useState('');
   const [showFollowsList, setShowFollowsList] = useState<'followers' | 'following' | null>(null);
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState('');
 
   useEffect(() => {
     if (profileUserId) {
@@ -432,7 +435,11 @@ const Profile = () => {
                           <img
                             src={post.image_url}
                             alt="Post"
-                            className="mt-2 rounded-lg max-h-64 w-full object-cover"
+                            className="mt-2 rounded-lg max-h-64 w-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
+                            onClick={() => {
+                              setSelectedImageUrl(post.image_url || '');
+                              setShowImageViewer(true);
+                            }}
                           />
                         )}
                         
@@ -497,7 +504,11 @@ const Profile = () => {
                           <img
                             src={post.image_url}
                             alt="Post"
-                            className="mt-2 rounded-lg max-h-64 w-full object-cover"
+                            className="mt-2 rounded-lg max-h-64 w-full object-cover cursor-pointer hover:scale-105 transition-transform duration-200"
+                            onClick={() => {
+                              setSelectedImageUrl(post.image_url || '');
+                              setShowImageViewer(true);
+                            }}
                           />
                         )}
                         
@@ -585,6 +596,14 @@ const Profile = () => {
           type={showFollowsList}
         />
       )}
+      
+      {/* Image Viewer */}
+      <ImageViewer
+        isOpen={showImageViewer}
+        onClose={() => setShowImageViewer(false)}
+        imageUrl={selectedImageUrl}
+        altText="Image du post"
+      />
       
       <BottomNavigation />
     </div>

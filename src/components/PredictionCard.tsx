@@ -35,6 +35,7 @@ import { usePostComments } from '@/hooks/usePostComments';
 import { CommentsBottomSheet } from '@/components/CommentsBottomSheet';
 import EditPostModal from '@/components/EditPostModal';
 import { usePosts } from '@/hooks/usePosts';
+import ImageViewer from './ImageViewer';
 
 interface PredictionCardProps {
   prediction: {
@@ -120,6 +121,7 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showFullText, setShowFullText] = useState(false);
   const [showPredictionModal, setShowPredictionModal] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hideControlsTimeout = useRef<NodeJS.Timeout>();
 
@@ -739,11 +741,11 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
                 </div>
               </div>
             ) : prediction.image && (
-              <div className="w-full h-48 overflow-hidden bg-gray-100 rounded-lg">
+              <div className="w-full h-48 overflow-hidden bg-gray-100 rounded-lg cursor-pointer" onClick={() => setShowImageViewer(true)}>
                 <img
                   src={prediction.image}
                   alt="Contenu du post"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                   loading="lazy"
                 />
               </div>
@@ -903,6 +905,16 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
         }}
         onSave={handleSavePost}
       />
+      
+      {/* Image Viewer */}
+      {prediction.image && (
+        <ImageViewer
+          isOpen={showImageViewer}
+          onClose={() => setShowImageViewer(false)}
+          imageUrl={prediction.image}
+          altText="Contenu du post"
+        />
+      )}
     </Card>
   );
 };
