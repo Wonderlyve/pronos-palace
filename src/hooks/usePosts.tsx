@@ -133,6 +133,7 @@ export const usePosts = () => {
     video_file?: File;
     username?: string;
     reservation_code?: string;
+    bet_type?: string;
   }) => {
     if (!user) {
       toast.error('Vous devez être connecté pour créer un post');
@@ -168,6 +169,7 @@ export const usePosts = () => {
           video_url,
           custom_username: postData.username,
           reservation_code: postData.reservation_code,
+          bet_type: postData.bet_type || 'simple',
           likes: 0,
           comments: 0,
           shares: 0,

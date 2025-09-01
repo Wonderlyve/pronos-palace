@@ -20,6 +20,7 @@ interface CSVRow {
   odds: number;
   confidence: number;
   username?: string;
+  bet_type?: string; // 'simple' or 'combine'
 }
 
 const BulkPost = () => {
@@ -28,19 +29,31 @@ const BulkPost = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<{ success: number; failed: number }>({ success: 0, failed: 0 });
+  const [templateType, setTemplateType] = useState<'simple' | 'combine'>('simple');
   const { createPost } = usePosts();
   const { user } = useAuth();
 
   const downloadTemplate = () => {
-    const csvContent = "content,sport,match_teams,prediction_text,analysis,odds,confidence,username\n" +
-      "Analyse du match PSG vs Real,Football,PSG vs Real Madrid,PSG gagnant,Le PSG joue à domicile et a une meilleure forme récente,1.85,85,winwin\n" +
-      "Pronostic tennis,Tennis,Nadal vs Djokovic,Nadal gagnant,Nadal excelle sur terre battue,2.10,75,starpro";
+    let csvContent = "";
+    let filename = "";
+    
+    if (templateType === 'simple') {
+      csvContent = "content,sport,match_teams,prediction_text,analysis,odds,confidence,username,bet_type\n" +
+        "Analyse du match PSG vs Real,Football,PSG vs Real Madrid,PSG gagnant,Le PSG joue à domicile et a une meilleure forme récente,1.85,85,winwin,simple\n" +
+        "Pronostic tennis,Tennis,Nadal vs Djokovic,Nadal gagnant,Nadal excelle sur terre battue,2.10,75,starpro,simple";
+      filename = 'template_posts_simple.csv';
+    } else {
+      csvContent = "content,sport,match_teams,prediction_text,analysis,odds,confidence,username,bet_type\n" +
+        "Combiné 3 matchs Football,Football,PSG vs Real Madrid | Barcelona vs Bayern | Liverpool vs City,PSG gagnant | Barcelona gagnant | Liverpool gagnant,Excellent combiné avec 3 équipes favorites à domicile,8.50,90,winwin,combine\n" +
+        "Combiné Tennis + Football,Multi-Sport,Djokovic vs Nadal | Chelsea vs Arsenal,Djokovic gagnant | Chelsea gagnant,Deux favoris logiques pour ce combiné,4.20,80,starpro,combine";
+      filename = 'template_posts_combine.csv';
+    }
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'template_posts.csv';
+    a.download = filename;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -70,6 +83,16 @@ const BulkPost = () => {
       // Validation du nom d'utilisateur si fourni
       if (row.username && !['winwin', 'starpro', 'Patrickprono', 'victoirepro'].includes(row.username)) {
         throw new Error(`Ligne ${index + 2}: Le nom d'utilisateur doit être winwin, starpro, Patrickprono ou victoirepro`);
+      }
+      
+      // Validation du type de pari
+      if (row.bet_type && !['simple', 'combine'].includes(row.bet_type)) {
+        throw new Error(`Ligne ${index + 2}: Le type de pari doit être 'simple' ou 'combine'`);
+      }
+      
+      // Valeur par défaut pour bet_type
+      if (!row.bet_type) {
+        row.bet_type = 'simple';
       }
       
       return row as CSVRow;
@@ -123,7 +146,8 @@ const BulkPost = () => {
           analysis: row.analysis,
           odds: row.odds,
           confidence: row.confidence,
-          username: row.username || 'Smart' // Par défaut Smart si pas de username spécifié
+          username: row.username || 'Smart', // Par défaut Smart si pas de username spécifié
+          bet_type: row.bet_type || 'simple'
         });
         successCount++;
       } catch (error) {
@@ -184,13 +208,46 @@ const BulkPost = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Téléchargez le modèle CSV pour voir le format requis avec des exemples.
-                </p>
-                <Button onClick={downloadTemplate} variant="outline">
-                  <Download className="w-4 h-4 mr-2" />
-                  Télécharger le modèle
-                </Button>
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Choisissez le type de posts à créer et téléchargez le modèle CSV correspondant.
+                  </p>
+                  
+                  {/* Sélecteur de type */}
+                  <div className="flex gap-2">
+                    <Button
+                      variant={templateType === 'simple' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTemplateType('simple')}
+                    >
+                      Paris Simples
+                    </Button>
+                    <Button
+                      variant={templateType === 'combine' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTemplateType('combine')}
+                    >
+                      Paris Combinés
+                    </Button>
+                  </div>
+                  
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm font-medium mb-1">
+                      {templateType === 'simple' ? 'Paris Simples' : 'Paris Combinés'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {templateType === 'simple' 
+                        ? 'Un pari par ligne avec un seul match et une seule prédiction.'
+                        : 'Plusieurs matchs combinés sur une même ligne. Séparez les matchs et prédictions par " | ".'
+                      }
+                    </p>
+                  </div>
+                  
+                  <Button onClick={downloadTemplate} variant="outline" className="w-full">
+                    <Download className="w-4 h-4 mr-2" />
+                    Télécharger le modèle {templateType === 'simple' ? 'Paris Simples' : 'Paris Combinés'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -244,7 +301,7 @@ const BulkPost = () => {
                         <div key={index} className="p-3 border rounded-lg">
                           <p className="font-medium truncate">{row.content}</p>
                           <p className="text-sm text-muted-foreground">
-                            {row.sport} • {row.match_teams} • Cote: {row.odds} • Confiance: {row.confidence}% • Utilisateur: {row.username || 'Smart'}
+                            {row.sport} • {row.match_teams} • Cote: {row.odds} • Confiance: {row.confidence}% • Type: {row.bet_type === 'combine' ? 'Combiné' : 'Simple'} • Utilisateur: {row.username || 'Smart'}
                           </p>
                         </div>
                       ))}
