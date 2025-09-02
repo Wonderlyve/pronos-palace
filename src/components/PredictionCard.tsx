@@ -36,6 +36,7 @@ import { CommentsBottomSheet } from '@/components/CommentsBottomSheet';
 import EditPostModal from '@/components/EditPostModal';
 import { usePosts } from '@/hooks/usePosts';
 import ImageViewer from './ImageViewer';
+import LoginModal from './LoginModal';
 
 interface PredictionCardProps {
   prediction: {
@@ -122,6 +123,7 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
   const [showFullText, setShowFullText] = useState(false);
   const [showPredictionModal, setShowPredictionModal] = useState(false);
   const [showImageViewer, setShowImageViewer] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hideControlsTimeout = useRef<NodeJS.Timeout>();
 
@@ -839,11 +841,7 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
           </div>
           
           {prediction.sport !== 'News' && (
-            <ProtectedComponent fallback={
-              <Button className="bg-gray-400 text-white text-xs px-3 py-1 h-7 cursor-not-allowed shrink-0" size="sm" disabled>
-                Se connecter
-              </Button>
-            }>
+            user ? (
               <Dialog open={showPredictionModal} onOpenChange={setShowPredictionModal}>
                 <DialogTrigger asChild>
                   <Button 
@@ -868,7 +866,15 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
                   />
                 </DialogContent>
               </Dialog>
-            </ProtectedComponent>
+            ) : (
+              <Button 
+                onClick={() => setShowLoginModal(true)}
+                className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 h-7 shrink-0" 
+                size="sm"
+              >
+                Voir le pronostique
+              </Button>
+            )
           )}
         </div>
       </CardContent>
@@ -915,6 +921,13 @@ const PredictionCard = ({ prediction, onOpenModal }: PredictionCardProps) => {
           altText="Contenu du post"
         />
       )}
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        message="Connectez-vous pour voir le pronostic complet"
+      />
     </Card>
   );
 };
