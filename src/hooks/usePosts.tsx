@@ -28,6 +28,7 @@ export interface Post {
   like_count?: number;
   comment_count?: number;
   reservation_code?: string;
+  match_time?: string;
 }
 
 export const usePosts = () => {
@@ -134,6 +135,7 @@ export const usePosts = () => {
     username?: string;
     reservation_code?: string;
     bet_type?: string;
+    match_time?: string;
   }) => {
     if (!user) {
       toast.error('Vous devez être connecté pour créer un post');
@@ -170,6 +172,7 @@ export const usePosts = () => {
           custom_username: postData.username,
           reservation_code: postData.reservation_code,
           bet_type: postData.bet_type || 'simple',
+          match_time: postData.match_time,
           likes: 0,
           comments: 0,
           shares: 0,

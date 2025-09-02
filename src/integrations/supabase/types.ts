@@ -628,6 +628,7 @@ export type Database = {
           image_url: string | null
           likes: number | null
           match_teams: string | null
+          match_time: string | null
           odds: number | null
           post_type: string | null
           prediction_text: string | null
@@ -651,6 +652,7 @@ export type Database = {
           image_url?: string | null
           likes?: number | null
           match_teams?: string | null
+          match_time?: string | null
           odds?: number | null
           post_type?: string | null
           prediction_text?: string | null
@@ -674,6 +676,7 @@ export type Database = {
           image_url?: string | null
           likes?: number | null
           match_teams?: string | null
+          match_time?: string | null
           odds?: number | null
           post_type?: string | null
           prediction_text?: string | null
