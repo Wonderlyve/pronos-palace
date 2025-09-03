@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { usePWABadge } from '@/hooks/usePWABadge';
 import { useNativeNotifications } from '@/hooks/useNativeNotifications';
+import { usePWANotifications } from '@/hooks/usePWANotifications';
 
 interface Notification {
   id: string;
@@ -21,6 +22,7 @@ export const useNotifications = () => {
   const { user } = useAuth();
   const channelRef = useRef<any>(null);
   const { showLocalNotification, playNotificationSound } = useNativeNotifications();
+  const { playPWANotificationSound } = usePWANotifications();
 
   // Utiliser le hook PWA Badge pour mettre à jour l'icône de l'app
   usePWABadge(unreadCount);
@@ -153,11 +155,15 @@ export const useNotifications = () => {
           console.log('New notification:', payload);
           const newNotification = payload.new as Notification;
           
+          // Enhanced notification handling for PWA and native
           setNotifications(prev => [newNotification, ...prev]);
           setUnreadCount(prev => prev + 1);
           
-          // Jouer le son de notification et afficher la notification native
+          // Play sound - enhanced for PWA
           playNotificationSound();
+          playPWANotificationSound();
+          
+          // Show notification
           showNotification(newNotification);
         }
       )

@@ -71,12 +71,42 @@ export const useNativeNotifications = () => {
 
   const showLocalNotification = async (title: string, body: string, data?: any) => {
     if (!Capacitor.isNativePlatform()) {
-      // Fallback to browser notification for web
+      // Enhanced PWA notification support
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, {
+        // Play sound first
+        await playNotificationSound();
+        
+        // Create notification with enhanced options for PWA
+        const notification = new Notification(title, {
           body,
           icon: '/icon-192.png',
-          badge: '/icon-192.png'
+          badge: '/icon-192.png',
+          requireInteraction: false,
+          silent: false, // Allow sound
+          tag: 'pendor-notification', // Group notifications
+          renotify: true,
+          data: data
+        } as NotificationOptions);
+
+        // Handle notification click
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+          if (data?.postId) {
+            // Navigate to post if available
+            window.location.href = `/?post=${data.postId}`;
+          }
+        };
+
+        // Auto close after 5 seconds
+        setTimeout(() => {
+          notification.close();
+        }, 5000);
+      } else if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        // Use service worker for better PWA support
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SHOW_NOTIFICATION',
+          payload: { title, body, data }
         });
       }
       return;
@@ -107,25 +137,56 @@ export const useNativeNotifications = () => {
       return;
     }
 
-    // Fallback web audio for browsers
+    // Enhanced web audio for PWA
+    try {
+      // Try to play audio file first (better for PWA)
+      const audio = new Audio('/beep.wav');
+      audio.volume = 0.5;
+      
+      // Handle autoplay restrictions
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Fallback to Web Audio API if audio file fails
+          console.log('Audio file failed, using Web Audio API fallback');
+          generateNotificationTone();
+        });
+      }
+    } catch (error) {
+      // Fallback to Web Audio API
+      console.log('Audio file not supported, using Web Audio API');
+      generateNotificationTone();
+    }
+  };
+
+  const generateNotificationTone = () => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Resume context if suspended (required for some browsers)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
+      // Create a pleasant notification sound
       oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
       oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
       
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
       
-      oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.5);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.4);
     } catch (error) {
-      console.error('Error playing notification sound:', error);
+      console.error('Error generating notification tone:', error);
     }
   };
 

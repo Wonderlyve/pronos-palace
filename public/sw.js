@@ -61,6 +61,39 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Gestionnaire pour les messages du client (PWA notifications)
+self.addEventListener('message', (event) => {
+  console.log('Service worker message received:', event.data);
+  
+  if (event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, body, data } = event.data.payload;
+    
+    const options = {
+      body: body || 'Nouvelle notification',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      vibrate: [200, 100, 200],
+      requireInteraction: false,
+      silent: false,
+      tag: 'pendor-notification',
+      renotify: true,
+      data: data,
+      actions: [
+        {
+          action: 'view',
+          title: 'Voir'
+        },
+        {
+          action: 'dismiss', 
+          title: 'Ignorer'
+        }
+      ]
+    };
+    
+    self.registration.showNotification(title || 'Nouveau pronostic', options);
+  }
+});
+
 // Gestionnaire pour les notifications push
 self.addEventListener('push', (event) => {
   console.log('Push message received:', event);
