@@ -210,7 +210,10 @@ const Story = () => {
     console.log(`${!isPaused ? '⏸️' : '▶️'} Story ${isPaused ? 'reprise' : 'pausée'}`);
   };
 
-  const handleLike = async () => {
+  const handleLike = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (!currentStory || !user) {
       toast.error('Vous devez être connecté pour liker');
       return;
@@ -229,6 +232,47 @@ const Story = () => {
     } catch (error) {
       toast.error('Erreur lors du like');
     }
+  };
+
+  const handleComment = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      toast.error('Vous devez être connecté pour commenter');
+      return;
+    }
+    
+    // Ouvrir une modal de commentaires ou naviguer vers une page de commentaires
+    toast.info('Fonctionnalité de commentaire bientôt disponible');
+  };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!currentStory) return;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: `Story de ${currentStory.profiles?.username || 'Utilisateur'}`,
+        text: currentStory.content || 'Regardez cette story sur PENDOR',
+        url: window.location.href
+      }).catch(() => {
+        // Fallback si le partage natif échoue
+        navigator.clipboard.writeText(window.location.href);
+        toast.success('Lien copié dans le presse-papiers');
+      });
+    } else {
+      // Fallback pour les navigateurs qui ne supportent pas Web Share API
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Lien copié dans le presse-papiers');
+    }
+  };
+
+  const handleMoreOptions = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   const formatNumber = (num: number) => {
@@ -380,7 +424,7 @@ const Story = () => {
                         muted={false}
                         loop={false}
                         preload="auto"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover story-video"
                         nearbyVideos={stories.map(s => s.media_url).filter(Boolean)}
                         currentIndex={index}
                         onVideoStateChange={(isPlaying) => {
@@ -471,7 +515,7 @@ const Story = () => {
                         <Button 
                           size="icon" 
                           variant="ghost" 
-                          className={`w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white ${isLiked ? 'text-red-500' : ''}`}
+                          className={`w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all story-interaction-button ${isLiked ? 'text-red-500 bg-red-500/20' : ''}`}
                           onClick={handleLike}
                         >
                           <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
@@ -482,7 +526,12 @@ const Story = () => {
                       </div>
                       
                       <div className="flex flex-col items-center space-y-1">
-                        <Button size="icon" variant="ghost" className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white">
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all story-interaction-button"
+                          onClick={handleComment}
+                        >
                           <MessageCircle className="w-5 h-5" />
                         </Button>
                         <span className="text-white text-xs font-medium">
@@ -490,20 +539,33 @@ const Story = () => {
                         </span>
                       </div>
                       
-                      <Button size="icon" variant="ghost" className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white">
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all story-interaction-button"
+                        onClick={handleShare}
+                      >
                         <Share className="w-5 h-5" />
                       </Button>
                       
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button size="icon" variant="ghost" className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white">
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all story-interaction-button"
+                            onClick={handleMoreOptions}
+                          >
                             <MoreHorizontal className="w-5 h-5" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-black/90 border-white/20">
                           {user && story.user_id === user.id && (
                             <DropdownMenuItem 
-                              onClick={handleDeleteStory}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteStory();
+                              }}
                               className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
@@ -592,9 +654,12 @@ const Story = () => {
                     {/* Bouton de création flottant */}
                     <div className="absolute top-1/2 right-3 transform -translate-y-1/2 z-10">
                       <Button
-                        onClick={() => setShowCreateModal(true)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowCreateModal(true);
+                        }}
                         size="icon"
-                        className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg"
+                        className="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg transition-all"
                       >
                         <Plus className="w-5 h-5" />
                       </Button>
