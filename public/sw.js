@@ -72,16 +72,33 @@ self.addEventListener('message', (event) => {
       body: body || 'Nouvelle notification',
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      vibrate: [200, 100, 200],
-      requireInteraction: false,
+      image: data?.image || null,
+      vibrate: [200, 100, 200, 100, 200],
+      requireInteraction: true,
       silent: false,
-      tag: 'pendor-notification',
+      persistent: true,
+      sticky: true,
+      tag: 'pendor-notification-' + Date.now(),
       renotify: true,
-      data: data,
+      timestamp: Date.now(),
+      dir: 'auto',
+      lang: 'fr',
+      data: {
+        url: data?.url || '/',
+        timestamp: Date.now(),
+        notificationId: Date.now(),
+        ...data
+      },
       actions: [
         {
           action: 'view',
-          title: 'Voir'
+          title: 'Voir',
+          icon: '/icon-192.png'
+        },
+        {
+          action: 'settings',
+          title: 'Paramètres',
+          icon: '/icon-192.png'
         },
         {
           action: 'dismiss', 
@@ -90,7 +107,7 @@ self.addEventListener('message', (event) => {
       ]
     };
     
-    self.registration.showNotification(title || 'Nouveau pronostic', options);
+    self.registration.showNotification(title || 'Pendor', options);
   }
 });
 
@@ -104,12 +121,30 @@ self.addEventListener('push', (event) => {
       body: data.body || 'Nouvelle notification',
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      vibrate: [200, 100, 200],
+      image: data.image || null,
+      vibrate: [200, 100, 200, 100, 200],
       requireInteraction: true,
+      silent: false,
+      persistent: true,
+      sticky: true,
+      tag: 'pendor-notification-' + Date.now(),
+      renotify: true,
+      timestamp: Date.now(),
+      data: {
+        url: data.url || '/',
+        notificationId: Date.now(),
+        ...data
+      },
       actions: [
         {
           action: 'view',
-          title: 'Voir'
+          title: 'Voir',
+          icon: '/icon-192.png'
+        },
+        {
+          action: 'settings',
+          title: 'Paramètres',
+          icon: '/icon-192.png'
         },
         {
           action: 'dismiss',
@@ -119,7 +154,7 @@ self.addEventListener('push', (event) => {
     };
     
     event.waitUntil(
-      self.registration.showNotification(data.title || 'Nouveau pronostic', options)
+      self.registration.showNotification(data.title || 'Pendor', options)
     );
   }
 });
@@ -132,7 +167,19 @@ self.addEventListener('notificationclick', (event) => {
   
   if (event.action === 'view') {
     event.waitUntil(
-      self.clients.openWindow('/')
+      self.clients.openWindow(event.notification.data?.url || '/')
+    );
+  } else if (event.action === 'settings') {
+    event.waitUntil(
+      self.clients.openWindow('/settings')
+    );
+  } else if (event.action === 'dismiss') {
+    // Just close the notification
+    return;
+  } else {
+    // Default click behavior (no action button clicked)
+    event.waitUntil(
+      self.clients.openWindow(event.notification.data?.url || '/')
     );
   }
 });
