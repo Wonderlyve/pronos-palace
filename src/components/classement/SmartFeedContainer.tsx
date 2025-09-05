@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { FeedSelector } from './FeedSelector';
 import { PostActions } from './PostActions';
+import { PostLeaderboard } from './PostLeaderboard';
 import { useClassement, ScoredPost } from '@/hooks/useClassement';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -108,29 +109,32 @@ export const SmartFeedContainer = () => {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Sélecteur de feed */}
-      <FeedSelector 
-        currentFeed={currentFeed}
-        onFeedChange={handleFeedChange}
-        isAuthenticated={!!user}
-      />
+    <div className="max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Colonne principale avec les feeds */}
+        <div className="lg:col-span-2">
+          {/* Sélecteur de feed */}
+          <FeedSelector 
+            currentFeed={currentFeed}
+            onFeedChange={handleFeedChange}
+            isAuthenticated={!!user}
+          />
 
-      {/* Bouton de rafraîchissement */}
-      <div className="p-4 flex justify-end">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={refreshing || loading}
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          Actualiser
-        </Button>
-      </div>
+          {/* Bouton de rafraîchissement */}
+          <div className="p-4 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              Actualiser
+            </Button>
+          </div>
 
-      {/* Liste des posts */}
-      <div className="space-y-6 p-4">
+          {/* Liste des posts */}
+          <div className="space-y-6 p-4">
         {loading && posts.length === 0 ? (
           <div className="flex justify-center items-center h-64">
             <Loader2 className="w-8 h-8 animate-spin" />
@@ -272,6 +276,13 @@ export const SmartFeedContainer = () => {
             )}
           </>
         )}
+          </div>
+        </div>
+
+        {/* Colonne latérale avec le classement */}
+        <div className="lg:col-span-1">
+          <PostLeaderboard />
+        </div>
       </div>
     </div>
   );
